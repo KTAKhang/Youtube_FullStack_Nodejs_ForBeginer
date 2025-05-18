@@ -19,7 +19,7 @@ const {
 
 /**
  * @swagger
- * /user/sign-up:
+ * /api/user/sign-up:
  *   post:
  *     summary: Đăng ký tài khoản mới dành cho role Administrator
  *     description: |
@@ -68,7 +68,7 @@ routerUser.post("/sign-up", authAdminMiddleware, userController.createUser);
 
 /**
  * @swagger
- * /user/sign-in:
+ * /api/user/sign-in:
  *   post:
  *     summary: Đăng nhập hệ thống
  *     description: Người dùng có thể đăng nhập vào hệ thống bằng tên đăng nhập và mật khẩu.
