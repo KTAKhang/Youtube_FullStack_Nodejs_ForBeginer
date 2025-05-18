@@ -11,7 +11,7 @@ const options = {
         },
         servers: [
             {
-                url: "https://toysshop.onrender.com/api",
+                url: "https://toysshop.onrender.com",
             },
         ],
         components: {
