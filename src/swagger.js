@@ -11,7 +11,7 @@ const options = {
         },
         servers: [
             {
-                url: "https://toysshop.onrender.com",
+                url: "https://youtube-fullstack-nodejs-forbeginer.onrender.com/api",
             },
         ],
         components: {
