@@ -92,3 +92,8 @@ const loginUser = async ({ email, password }) => {
         throw error;
     }
 };
+
+module.exports = {
+    createUser,
+    loginUser,
+};
