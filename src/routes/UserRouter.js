@@ -550,4 +550,5 @@ routerUser.get("/get-all", authAdminMiddleware, userController.getAllUser);
  */
 routerUser.get("/:id", authAdminMiddleware, userController.getUserById);
 
+
 module.exports = routerUser;

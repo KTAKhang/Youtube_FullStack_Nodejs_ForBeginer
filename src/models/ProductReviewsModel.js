@@ -18,7 +18,7 @@ const productReviewSchema = new mongoose.Schema({
     },
     rating: { type: Number, required: true, min: 1, max: 5 },
     review_content: String,
-    status: { type: Boolean, required: true }
+    status: { type: Boolean, required: true, default: true }
 }, {
     timestamps: true,
 });
