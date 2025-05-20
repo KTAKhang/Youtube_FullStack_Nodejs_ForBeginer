@@ -11,6 +11,11 @@ const orderSchema = new mongoose.Schema({
     receiver_address: { type: String, required: true },
     receiver_name: { type: String, required: true },
     receiver_phone: { type: Number, required: true },
+    order_status_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "order_status",
+        required: true,
+    },
     status: { type: Boolean, required: true, default: true }
 }, {
     timestamps: true,
