@@ -133,29 +133,6 @@ const getCategoryById = async (id) => {
     }
 };
 
-// // Xóa danh mục
-// const deleteCategory = async (id) => {
-//     try {
-//         const category = await CategoriesModel.findById(id);
-//         if (!category) {
-//             return { status: "ERR", message: "Category does not exist" };
-//         }
-
-//         if (category.image) {
-//             const imageId = category.image.split("/").pop().split(".")[0];
-//             await cloudinary.uploader.destroy(`categories/${imageId}`);
-//         }
-
-//         await CategoriesModel.findByIdAndDelete(id);
-
-//         return {
-//             status: "OK",
-//             message: "Category deleted successfully",
-//         };
-//     } catch (error) {
-//         return { status: "ERR", message: error.message };
-//     }
-// };
 
 module.exports = {
     createCategory,
