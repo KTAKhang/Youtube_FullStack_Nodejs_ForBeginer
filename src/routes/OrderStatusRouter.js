@@ -9,6 +9,13 @@ const {
 
 /**
  * @swagger
+ * tags:
+ *   name: Orders-Status
+ *   description: API quản lý trạng thái đơn hàng
+ */
+
+/**
+ * @swagger
  * /order-status:
  *   get:
  *     summary: Lấy danh sách trạng thái đơn hàng
