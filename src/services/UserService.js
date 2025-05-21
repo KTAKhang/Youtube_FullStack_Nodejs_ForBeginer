@@ -152,7 +152,7 @@ const updateUser = async (id, data, file, role) => {
             return regex.test(password);
         };
 
-        console.log(data.password);
+
         if (data.password) {
             if (!isStrictPassword(data.password)) {
                 return {

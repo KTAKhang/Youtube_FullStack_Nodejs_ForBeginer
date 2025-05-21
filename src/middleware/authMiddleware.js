@@ -16,7 +16,7 @@ const authAdminMiddleware = (req, res, next) => {
             "role_id",
             "name"
         );
-        console.log(userData);
+
 
         if (userData?.role_id?.name === "admin") {
             next();

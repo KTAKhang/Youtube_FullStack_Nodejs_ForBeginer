@@ -2,7 +2,7 @@ const AuthService = require("../services/AuthService");
 
 const sendRegisterOTP = async (req, res) => {
     try {
-        console.log("req.body", req.body);
+
         const { user_name, email, password } = req.body;
 
 

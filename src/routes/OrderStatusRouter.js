@@ -20,8 +20,6 @@ const {
  *   get:
  *     summary: Lấy danh sách trạng thái đơn hàng
  *     description: Trả về toàn bộ danh sách các trạng thái đơn hàng hiện có.
- *     tags:
- *       - Order Status
  *     responses:
  *       200:
  *         description: Lấy danh sách trạng thái đơn hàng thành công

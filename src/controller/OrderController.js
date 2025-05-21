@@ -133,7 +133,7 @@ const cancelOrder = async (req, res) => {
     try {
         const orderId = req.params.id;
         const userId = req.user._id;
-        console.log("User ID:", userId);
+
 
         const response = await OrderService.cancelOrderByCustomer(orderId, userId);
         if (response.status === "ERR") {

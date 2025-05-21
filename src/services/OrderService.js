@@ -214,8 +214,7 @@ const cancelOrderByCustomer = async (orderId, userId) => {
         if (!order) {
             return { status: "ERR", message: "Order not found" };
         }
-        console.log("order.user_id:", order.user_id);
-        console.log("userId:", userId);
+
 
         if (order.user_id.toString() !== userId.toString()) {
             return { status: "ERR", message: "Unauthorized to cancel this order" };

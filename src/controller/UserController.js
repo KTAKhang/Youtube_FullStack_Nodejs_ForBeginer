@@ -96,21 +96,23 @@ const updateUser = async (req, res) => {
         const data = req.body;
         const file = req.file;
 
-        if (!req.user || !req.user.id) {
+
+        if (!req.user || !req.user._id) {
             return res.status(401).json({ status: "ERR", message: "Unauthorized" });
         }
 
-        const userID = req.user.id;
+
+        const userID = req.user._id;
         const roleResult = await checkRole(userID);
 
         if (roleResult.status === "ERR") {
             return res.status(404).json({ status: "ERR", message: roleResult.message });
         }
 
-        const isAdmin = roleResult.role === "admin";
-
-        if (!isAdmin && userID !== id) {
-            return res.status(403).json({ status: "ERR", message: "You are not authorized to update this user" });
+        if (roleResult.role !== "admin" && userID !== id) {
+            return res
+                .status(200)
+                .json({ status: "ERR", message: "You are not authorized" });
         }
 
         if (!id) {
@@ -204,7 +206,7 @@ const getUserById = async (req, res) => {
 
 const getUserByToken = async (req, res) => {
     try {
-        const userID = req.user?.id;
+        const userID = req.user?._id;
 
         if (!userID) {
             return res.status(401).json({
@@ -239,7 +241,7 @@ const getUserByToken = async (req, res) => {
 const changePassword = async (req, res) => {
     try {
         const { old_password, new_password } = req.body;
-        const userID = req.user.id;
+        const userID = req.user._id;
 
         if (!old_password || !new_password) {
             return res.status(400).json({
