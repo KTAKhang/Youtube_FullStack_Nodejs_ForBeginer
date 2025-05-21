@@ -3,9 +3,9 @@ const routerOrder = express.Router();
 const orderController = require("../controller/OrderController");
 
 const {
-    authMiddleware,
     authAdminMiddleware,
-    authUserMiddleware,
+    authMiddleware,
+    authUserMiddleware
 } = require("../middleware/authMiddleware");
 
 /**
@@ -19,9 +19,12 @@ const {
  * @swagger
  * /order/create:
  *   post:
- *     summary: Tạo đơn hàng mới (chỉ user)
+ *     summary: Tạo đơn hàng mới (khách hàng)
+ *     description: Người dùng đã đăng nhập có thể tạo đơn hàng từ các sản phẩm trong giỏ hàng.
  *     tags:
  *       - Orders
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -29,21 +32,19 @@ const {
  *           schema:
  *             type: object
  *             properties:
- *               user_id:
- *                 type: string
- *               items:
+ *               selected_product_ids:
  *                 type: array
  *                 items:
- *                   type: object
- *                   properties:
- *                     product_id:
- *                       type: string
- *                     quantity:
- *                       type: number
- *               shipping_address:
- *                 type: string
- *               total_price:
- *                 type: number
+ *                   type: string
+ *               receiverInfo:
+ *                 type: object
+ *                 properties:
+ *                   receiver_name:
+ *                     type: string
+ *                   receiver_phone:
+ *                     type: string
+ *                   receiver_address:
+ *                     type: string
  *     responses:
  *       201:
  *         description: Đơn hàng đã được tạo thành công
@@ -56,30 +57,27 @@ routerOrder.post("/create", authUserMiddleware, orderController.createOrder);
  * @swagger
  * /order/update/{id}:
  *   put:
- *     summary: Cập nhật đơn hàng (chỉ admin)
+ *     summary: Cập nhật đơn hàng (admin hoặc nhân viên)
+ *     description: Cho phép admin/nhân viên cập nhật thông tin đơn hàng.
  *     tags:
  *       - Orders
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID của đơn hàng cần cập nhật
  *         schema:
  *           type: string
+ *         description: ID đơn hàng
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             properties:
- *               status:
- *                 type: string
- *               delivery_status:
- *                 type: string
+ *             additionalProperties: true
  *     responses:
  *       200:
- *         description: Đơn hàng đã được cập nhật thành công
+ *         description: Cập nhật đơn hàng thành công
  *       400:
  *         description: Dữ liệu không hợp lệ
  */
@@ -89,117 +87,36 @@ routerOrder.put("/update/:id", authAdminMiddleware, orderController.updateOrder)
  * @swagger
  * /order:
  *   get:
- *     summary: Lấy danh sách đơn hàng (phân trang)
+ *     summary: Lấy tất cả đơn hàng (tùy vai trò)
+ *     description: Admin/nhân viên có thể xem tất cả, người dùng chỉ xem đơn của mình.
  *     tags:
  *       - Orders
- *     parameters:
- *       - in: query
- *         name: page
- *         required: false
- *         schema:
- *           type: integer
- *       - in: query
- *         name: limit
- *         required: false
- *         schema:
- *           type: integer
- *       - in: query
- *         name: user_id
- *         required: false
- *         schema:
- *           type: string
- *         description: Lọc đơn hàng theo người dùng (dành cho admin hoặc người dùng lấy đơn của chính họ)
  *     responses:
  *       200:
  *         description: Lấy danh sách đơn hàng thành công
- *       400:
- *         description: Tham số không hợp lệ
  */
-routerOrder.get("/", authAdminMiddleware, orderController.getAllOrders);
-
-/**
- * @swagger
- * /order/user:
- *   get:
- *     summary: Lấy đơn hàng của người dùng đang đăng nhập (phân trang)
- *     tags:
- *       - Orders
- *     parameters:
- *       - in: query
- *         name: user_id
- *         required: true
- *         schema:
- *           type: string
- *         description: ID của người dùng đang đăng nhập
- *       - in: query
- *         name: page
- *         required: false
- *         schema:
- *           type: integer
- *         description: "Trang hiện tại (mặc định: 1)"
- *       - in: query
- *         name: limit
- *         required: false
- *         schema:
- *           type: integer
- *         description: "Số đơn hàng mỗi trang (mặc định: 10)"
- *     responses:
- *       200:
- *         description: Lấy đơn hàng thành công
- *       400:
- *         description: Thiếu hoặc sai user_id
- *       403:
- *         description: Không được phép truy cập đơn hàng của người khác
- *       500:
- *         description: Lỗi máy chủ
- */
-routerOrder.get("/user", authUserMiddleware, orderController.getOrderByUserID);
-
-/**
- * @swagger
- * /order/{id}:
- *   get:
- *     summary: Lấy thông tin đơn hàng theo ID
- *     tags:
- *       - Orders
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: ID của đơn hàng
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Lấy chi tiết đơn hàng thành công
- *       404:
- *         description: Không tìm thấy đơn hàng
- */
-routerOrder.get("/:id", authMiddleware, orderController.getOrderById);
-
-
+routerOrder.get("/", authUserMiddleware, orderController.getAllOrders);
 
 /**
  * @swagger
  * /order/cancel/{id}:
  *   put:
- *     summary: Hủy đơn hàng (chỉ user, chỉ khi đơn thuộc về họ và chưa xử lý)
+ *     summary: Hủy đơn hàng (chỉ customer)
+ *     description: Người dùng có vai trò customer có thể hủy đơn hàng chưa xử lý.
  *     tags:
  *       - Orders
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID của đơn hàng cần hủy
+ *         description: ID đơn hàng cần hủy
  *         schema:
  *           type: string
  *     responses:
  *       200:
- *         description: Đơn hàng đã được hủy
+ *         description: Hủy đơn hàng thành công
  *       403:
- *         description: Không có quyền hủy đơn
- *       400:
- *         description: Không thể hủy đơn hàng đã xử lý
+ *         description: Không có quyền
  */
 routerOrder.put("/cancel/:id", authUserMiddleware, orderController.cancelOrder);
 

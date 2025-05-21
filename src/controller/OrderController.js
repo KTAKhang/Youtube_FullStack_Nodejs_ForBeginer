@@ -2,157 +2,102 @@ const OrderService = require("../services/OrderService");
 
 const createOrder = async (req, res) => {
     try {
-        const orderData = req.body;
+        const user_id = req.user._id;
+        const { selected_product_ids, receiverInfo } = req.body;
 
-        const response = await OrderService.createOrder(orderData);
-
-        if (response.status === "ERR") {
-            return res.status(400).json(response);
+        if (!selected_product_ids || !Array.isArray(selected_product_ids) || selected_product_ids.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Vui lòng chọn ít nhất một sản phẩm để đặt hàng"
+            });
         }
 
-        return res.status(201).json(response);
+        if (!receiverInfo || !receiverInfo.receiver_name || !receiverInfo.receiver_phone || !receiverInfo.receiver_address) {
+            return res.status(400).json({
+                success: false,
+                message: "Thiếu thông tin người nhận"
+            });
+        }
+
+        const result = await OrderService.createOrderFromSelectedCartItems(user_id, selected_product_ids, receiverInfo);
+        return res.status(201).json(result);
     } catch (error) {
         return res.status(500).json({
-            status: "ERR",
-            message: error.message || "Internal Server Error",
+            success: false,
+            message: error.message || "Tạo đơn hàng thất bại"
         });
     }
 };
 
 const updateOrder = async (req, res) => {
     try {
-        const { id } = req.params;
+        const order_id = req.params.id;
+        console.log("order_id", order_id);
         const updateData = req.body;
 
-        if (!id) {
-            return res.status(400).json({ status: "ERR", message: "Order ID is required" });
+        if (!order_id) {
+            return res.status(400).json({ success: false, message: "Thiếu ID đơn hàng" });
         }
 
-        const response = await OrderService.updateOrder(id, updateData);
-
-        if (response.status === "ERR") {
-            return res.status(400).json(response);
-        }
-
-        return res.status(200).json(response);
+        const result = await OrderService.updateOrder(order_id, updateData);
+        return res.status(200).json(result);
     } catch (error) {
         return res.status(500).json({
-            status: "ERR",
-            message: error.message || "Internal Server Error",
+            success: false,
+            message: error.message || "Cập nhật đơn hàng thất bại"
         });
     }
 };
 
 const getAllOrders = async (req, res) => {
     try {
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-        const user_id = req.query.user_id || "";
+        const role = req.user.role;
+        const user_id = req.user._id;
 
-        if (isNaN(page) || page <= 0 || isNaN(limit) || limit <= 0) {
-            return res.status(400).json({
-                status: "ERR",
-                message: "Page and limit must be positive integers",
-            });
-        }
-
-        const response = await OrderService.getAllOrders(page, limit, user_id);
-        return res.status(200).json(response);
-    } catch (error) {
-        return res.status(500).json({
-            status: "ERR",
-            message: error.message || "Internal Server Error",
+        const result = await OrderService.getAllOrders(role, user_id);
+        return res.status(200).json({
+            success: true,
+            message: "Lấy danh sách đơn hàng thành công",
+            data: result
         });
-    }
-};
-
-const getOrderByUserID = async (req, res) => {
-    try {
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-        const user_id = req.query.user_id;
-
-        if (!user_id) {
-            return res.status(400).json({
-                status: "ERR",
-                message: "Missing user_id",
-            });
-        }
-
-        if (isNaN(page) || page <= 0 || isNaN(limit) || limit <= 0) {
-            return res.status(400).json({
-                status: "ERR",
-                message: "Page and limit must be positive integers",
-            });
-        }
-
-
-        if (String(user_id) !== String(req.user._id)) {
-            return res.status(403).json({
-                status: "ERR",
-                message: "Unauthorized: user_id does not match authenticated user",
-            });
-        }
-
-        const response = await OrderService.getOrderByUserID(user_id, page, limit);
-        return res.status(200).json(response);
-
     } catch (error) {
         return res.status(500).json({
-            status: "ERR",
-            message: error.message || "Internal Server Error",
-        });
-    }
-};
-
-
-const getOrderById = async (req, res) => {
-    try {
-        const { id } = req.params;
-
-        if (!id) {
-            return res.status(400).json({ status: "ERR", message: "Order ID is required" });
-        }
-
-        const response = await OrderService.getOrderById(id);
-
-        if (response.status === "ERR") {
-            return res.status(404).json(response);
-        }
-
-        return res.status(200).json(response);
-    } catch (error) {
-        return res.status(500).json({
-            status: "ERR",
-            message: error.message || "Internal Server Error",
+            success: false,
+            message: error.message || "Lỗi máy chủ khi lấy đơn hàng"
         });
     }
 };
 
 const cancelOrder = async (req, res) => {
     try {
-        const orderId = req.params.id;
-        const userId = req.user._id;
+        const order_id = req.params.id;
+        const user_id = req.user._id;
+        const role = req.user.role;
+        console.log("user_id", user_id);
+        console.log("role", role);
 
 
-        const response = await OrderService.cancelOrderByCustomer(orderId, userId);
-        if (response.status === "ERR") {
-            return res.status(400).json(response);
+        if (role !== 'customer') {
+            return res.status(403).json({
+                success: false,
+                message: "Chỉ người dùng có vai trò customer mới có quyền hủy đơn hàng"
+            });
         }
 
-        return res.status(200).json(response);
+        const result = await OrderService.cancelOrderByCustomer(order_id, user_id);
+        return res.status(200).json(result);
     } catch (error) {
-        return res.status(500).json({ status: "ERR", message: error.message });
+        return res.status(400).json({
+            success: false,
+            message: error.message || "Hủy đơn hàng thất bại"
+        });
     }
 };
-
 
 
 module.exports = {
     createOrder,
     updateOrder,
     getAllOrders,
-    getOrderById,
-    cancelOrder,
-    getOrderByUserID,
+    cancelOrder
 };

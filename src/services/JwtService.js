@@ -26,8 +26,9 @@ const RefreshTokenJWT = (token) => {
                         message: "The authentication",
                     });
                 }
+
                 const accessToken = await generalAccessToken({
-                    _id: user.id,
+                    _id: user._id,
                     isAdmin: user.isAdmin,
                     role: user.role,
                 });

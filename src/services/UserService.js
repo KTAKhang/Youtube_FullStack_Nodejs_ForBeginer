@@ -64,13 +64,19 @@ const loginUser = async ({ email, password }) => {
         const passwordMatch = bcrypt.compareSync(password, user.password);
         if (!passwordMatch) throw { status: "ERR", message: "Incorrect password" };
 
+        // ✅ Populate để lấy role name
+        const populatedUser = await UserModel.findById(user._id).populate("role_id", "name -_id");
+        const roleName = populatedUser?.role_id?.name || "customer"; // fallback nếu role bị lỗi
+
+        // ✅ Tạo token có role & isAdmin đúng
         const accessToken = await jwtService.generalAccessToken({
             _id: user._id,
-            isAdmin: user.isAdmin,
-            role: user.role,
+            isAdmin: roleName === "admin",
+            role: roleName,
         });
 
-        const populatedUser = await UserModel.findById(user._id).populate("role_id", "name -_id");
+
+
 
         return {
             status: "OK",
