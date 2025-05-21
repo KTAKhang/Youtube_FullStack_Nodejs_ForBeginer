@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const OrderStatusSchema = new mongoose.Schema({
+const orderStatusSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
@@ -10,5 +10,5 @@ const OrderStatusSchema = new mongoose.Schema({
     }
 });
 
-const OrderStatusModel = mongoose.model('order_status', OrderStatusSchema);
+const OrderStatusModel = mongoose.model('order_statuses', orderStatusSchema);
 module.exports = OrderStatusModel;

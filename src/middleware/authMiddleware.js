@@ -12,10 +12,11 @@ const authAdminMiddleware = (req, res, next) => {
                 .status(404)
                 .json({ message: "Token is not valid", status: "ERR" });
         }
-        const userData = await UserModel.findOne({ _id: user.id }).populate(
+        const userData = await UserModel.findOne({ _id: user._id }).populate(
             "role_id",
             "name"
         );
+        console.log(userData);
 
         if (userData?.role_id?.name === "admin") {
             next();
@@ -37,7 +38,7 @@ const authMiddleware = (req, res, next) => {
                 .status(404)
                 .json({ message: "Token is not valid", status: "ERR" });
         }
-        const userData = await UserModel.findOne({ _id: user.id }).populate(
+        const userData = await UserModel.findOne({ _id: user._id }).populate(
             "role_id",
             "name"
         );

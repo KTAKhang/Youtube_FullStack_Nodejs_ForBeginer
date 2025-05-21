@@ -27,8 +27,9 @@ const RefreshTokenJWT = (token) => {
                     });
                 }
                 const accessToken = await generalAccessToken({
-                    id: user.id,
+                    _id: user.id,
                     isAdmin: user.isAdmin,
+                    role: user.role,
                 });
                 resolve({
                     status: "OK",

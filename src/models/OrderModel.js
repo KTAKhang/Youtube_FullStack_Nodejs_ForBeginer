@@ -13,7 +13,7 @@ const orderSchema = new mongoose.Schema({
     receiver_phone: { type: Number, required: true },
     order_status_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "order_status",
+        ref: "order_statuses",
         required: true,
     },
     status: { type: Boolean, required: true, default: true }

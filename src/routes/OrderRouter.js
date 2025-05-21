@@ -75,7 +75,7 @@ routerOrder.post("/create", authUserMiddleware, orderController.createOrder);
  *             properties:
  *               status:
  *                 type: string
- *               shipping_date:
+ *               delivery_status:
  *                 type: string
  *     responses:
  *       200:
@@ -115,7 +115,45 @@ routerOrder.put("/update/:id", authAdminMiddleware, orderController.updateOrder)
  *       400:
  *         description: Tham số không hợp lệ
  */
-routerOrder.get("/", authMiddleware, orderController.getAllOrders);
+routerOrder.get("/", authAdminMiddleware, orderController.getAllOrders);
+
+/**
+ * @swagger
+ * /order/user:
+ *   get:
+ *     summary: Lấy đơn hàng của người dùng đang đăng nhập (phân trang)
+ *     tags:
+ *       - Orders
+ *     parameters:
+ *       - in: query
+ *         name: user_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của người dùng đang đăng nhập
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         schema:
+ *           type: integer
+ *         description: "Trang hiện tại (mặc định: 1)"
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema:
+ *           type: integer
+ *         description: "Số đơn hàng mỗi trang (mặc định: 10)"
+ *     responses:
+ *       200:
+ *         description: Lấy đơn hàng thành công
+ *       400:
+ *         description: Thiếu hoặc sai user_id
+ *       403:
+ *         description: Không được phép truy cập đơn hàng của người khác
+ *       500:
+ *         description: Lỗi máy chủ
+ */
+routerOrder.get("/user", authUserMiddleware, orderController.getOrderByUserID);
 
 /**
  * @swagger

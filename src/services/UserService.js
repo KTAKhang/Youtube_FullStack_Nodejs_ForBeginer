@@ -65,8 +65,9 @@ const loginUser = async ({ email, password }) => {
         if (!passwordMatch) throw { status: "ERR", message: "Incorrect password" };
 
         const accessToken = await jwtService.generalAccessToken({
-            id: user._id,
+            _id: user._id,
             isAdmin: user.isAdmin,
+            role: user.role,
         });
 
         const populatedUser = await UserModel.findById(user._id).populate("role_id", "name -_id");

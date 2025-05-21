@@ -66,6 +66,46 @@ const getAllOrders = async (req, res) => {
     }
 };
 
+const getOrderByUserID = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const user_id = req.query.user_id;
+
+        if (!user_id) {
+            return res.status(400).json({
+                status: "ERR",
+                message: "Missing user_id",
+            });
+        }
+
+        if (isNaN(page) || page <= 0 || isNaN(limit) || limit <= 0) {
+            return res.status(400).json({
+                status: "ERR",
+                message: "Page and limit must be positive integers",
+            });
+        }
+
+
+        if (String(user_id) !== String(req.user._id)) {
+            return res.status(403).json({
+                status: "ERR",
+                message: "Unauthorized: user_id does not match authenticated user",
+            });
+        }
+
+        const response = await OrderService.getOrderByUserID(user_id, page, limit);
+        return res.status(200).json(response);
+
+    } catch (error) {
+        return res.status(500).json({
+            status: "ERR",
+            message: error.message || "Internal Server Error",
+        });
+    }
+};
+
+
 const getOrderById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -92,7 +132,8 @@ const getOrderById = async (req, res) => {
 const cancelOrder = async (req, res) => {
     try {
         const orderId = req.params.id;
-        const userId = req.user._id; // giả sử middleware authUserMiddleware đã thêm user vào req
+        const userId = req.user._id;
+        console.log("User ID:", userId);
 
         const response = await OrderService.cancelOrderByCustomer(orderId, userId);
         if (response.status === "ERR") {
@@ -113,4 +154,5 @@ module.exports = {
     getAllOrders,
     getOrderById,
     cancelOrder,
+    getOrderByUserID,
 };

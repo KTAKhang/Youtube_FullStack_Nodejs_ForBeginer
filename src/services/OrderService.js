@@ -144,6 +144,43 @@ const getAllOrders = async (page = 1, limit = 10, user_id = "") => {
     }
 };
 
+const getOrderByUserID = async (user_id, page = 1, limit = 10) => {
+    try {
+        if (!user_id) {
+            throw { status: "ERR", message: "User ID is required" };
+        }
+
+        const query = { user_id };
+
+        const allOrders = await OrderModel.find(query)
+            .populate("user_id", "name email -_id")
+            .populate("order_status_id", "name -_id")
+            .sort({ createdAt: -1 });
+
+        const totalOrders = allOrders.length;
+        const totalPage = Math.ceil(totalOrders / limit);
+        const currentPage = Number(page);
+
+        const paginatedOrders = allOrders.slice((page - 1) * limit, page * limit);
+
+        return {
+            status: "OK",
+            message: "Orders retrieved successfully for user",
+            data: {
+                orders: paginatedOrders,
+                total: { currentPage, totalOrders, totalPage }
+            }
+        };
+
+    } catch (error) {
+        throw {
+            status: error.status || "ERR",
+            message: error.message || "Internal Server Error"
+        };
+    }
+};
+
+
 
 const getOrderById = async (id) => {
     try {
@@ -171,20 +208,25 @@ const getOrderById = async (id) => {
 
 const cancelOrderByCustomer = async (orderId, userId) => {
     try {
-        const order = await OrderModel.findById(orderId);
+        const order = await OrderModel.findById(orderId)
+            .populate("order_status_id"); // lấy dữ liệu trạng thái
+
         if (!order) {
             return { status: "ERR", message: "Order not found" };
         }
+        console.log("order.user_id:", order.user_id);
+        console.log("userId:", userId);
 
         if (order.user_id.toString() !== userId.toString()) {
             return { status: "ERR", message: "Unauthorized to cancel this order" };
         }
 
-        if (order.status !== "PENDING") {
+        // So sánh theo tên trạng thái đã populate
+        if (order.order_status_id.name !== "PENDING") {
             return { status: "ERR", message: "Only pending orders can be cancelled" };
         }
 
-        order.status = "CANCELLED";
+        order.order_status_id = "682c6edc03ffc771169ec2d1";
         await order.save();
 
         return { status: "OK", message: "Order cancelled successfully", data: order };
@@ -193,9 +235,12 @@ const cancelOrderByCustomer = async (orderId, userId) => {
     }
 };
 
+
 module.exports = {
     createOrder,
     updateOrder,
     getAllOrders,
-    getOrderById
+    getOrderById,
+    cancelOrderByCustomer,
+    getOrderByUserID
 };
