@@ -42,7 +42,18 @@ const sendRegisterOTP = async (user_name, email, password) => {
         from: process.env.SMTP_USER,
         to: email,
         subject: "🔐 OTP for Registration",
-        html: `<p>Your OTP is: <strong>${otp}</strong>. It expires in 10 minutes.</p>`,
+        html: `
+        <div style="max-width: 400px; margin: 20px auto; padding: 20px; border: 2px solid #4CAF50; border-radius: 10px; background-color: #f9fff9; font-family: Arial, sans-serif; text-align: center;">
+  <h2 style="color: #4CAF50; margin-bottom: 10px;">Your OTP Code</h2>
+  <p style="font-size: 16px; color: #333;">
+    Please use the following OTP to verify your account:
+  </p>
+  <div style="font-size: 24px; font-weight: bold; color: #ffffff; background-color: #4CAF50; padding: 10px 20px; border-radius: 8px; display: inline-block; letter-spacing: 2px;">
+    ${otp}
+  </div>
+  <p style="margin-top: 15px; color: #666;">This code will expire in <strong>10 minutes</strong>.</p>
+</div>
+`,
     });
 
     return { status: "OK", message: "OTP sent to email" };

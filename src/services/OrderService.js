@@ -219,7 +219,7 @@ async function cancelOrderByCustomer(order_id, user_id) {
 
         // B4: Lấy trạng thái CANCELED
         const canceledStatus = await OrderStatusModel.findOne({ name: "CANCELLED" }).session(session);
-        if (!canceledStatus) throw new Error("Không tìm thấy trạng thái CANCELED");
+        if (!canceledStatus) throw new Error("Không tìm thấy trạng thái CANCELLED");
 
         // B5: Cập nhật trạng thái đơn hàng
         order.order_status_id = canceledStatus._id;
