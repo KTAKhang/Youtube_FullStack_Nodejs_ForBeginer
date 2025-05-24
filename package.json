@@ -19,10 +19,12 @@
   "author": "KTAKhang",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.9.0",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
     "cloudinary": "^2.5.1",
     "cors": "^2.8.5",
+    "crypto": "^1.0.1",
     "dotenv": "^16.4.7",
     "eco-be": "file:",
     "exceljs": "^4.4.0",
@@ -36,6 +38,7 @@
     "nodemon": "^3.1.10",
     "swagger-autogen": "^2.23.7",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "uuid": "^11.1.0"
   }
 }

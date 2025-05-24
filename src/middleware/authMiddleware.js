@@ -3,55 +3,54 @@ const dotenv = require("dotenv");
 dotenv.config();
 const UserModel = require("../models/UserModel");
 
-const authAdminMiddleware = (req, res, next) => {
-    const token = req.headers?.authorization?.split(" ")[1];
+const authAdminMiddleware = async (req, res, next) => {
+    const authHeader = req.headers?.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({ message: "No token provided", status: "ERR" });
+    }
 
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, user) => {
-        if (err) {
-            return res
-                .status(404)
-                .json({ message: "Token is not valid", status: "ERR" });
-        }
-        const userData = await UserModel.findOne({ _id: user._id }).populate(
-            "role_id",
-            "name"
-        );
+    const token = authHeader.split(" ")[1];
 
+    try {
+        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        const userData = await UserModel.findById(decoded._id).populate("role_id", "name");
 
         if (userData?.role_id?.name === "admin") {
-            next();
-        } else {
-            return res
-                .status(404)
-                .json({ message: "The authentication", status: "ERR" });
+            req.user = decoded;
+            return next();
         }
-    });
+
+        return res.status(403).json({ message: "Access denied", status: "ERR" });
+    } catch (err) {
+        return res.status(401).json({ message: "Invalid token", status: "ERR" });
+    }
 };
 
-const authMiddleware = (req, res, next) => {
-    const token = req.headers?.authorization?.split(" ")[1];
-    const id = req.params.id;
 
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, user) => {
-        if (err) {
-            return res
-                .status(404)
-                .json({ message: "Token is not valid", status: "ERR" });
-        }
-        const userData = await UserModel.findOne({ _id: user._id }).populate(
-            "role_id",
-            "name"
-        );
+const authMiddleware = async (req, res, next) => {
+    const authHeader = req.headers?.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({ message: "No token provided", status: "ERR" });
+    }
 
-        if (userData?.role_id?.name === "admin" || user?.id === id) {
-            next();
-        } else {
-            return res
-                .status(404)
-                .json({ message: "The authentication", status: "ERR" });
+    const token = authHeader.split(" ")[1];
+
+    try {
+        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        const userData = await UserModel.findById(decoded._id).populate("role_id", "name");
+
+        // Nếu là admin hoặc đang truy cập thông tin của chính họ
+        if (userData?.role_id?.name === "admin" || decoded._id === req.params._id) {
+            req.user = userData;
+            return next();
         }
-    });
+
+        return res.status(403).json({ message: "Access denied", status: "ERR" });
+    } catch (err) {
+        return res.status(401).json({ message: "Invalid token", status: "ERR" });
+    }
 };
+
 
 const authUserMiddleware = (req, res, next) => {
     try {
