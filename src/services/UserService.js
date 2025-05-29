@@ -277,6 +277,7 @@ const getUserById = (id) => {
             const dataOutput = {
                 _id: dataUser._id,
                 user_name: dataUser.user_name,
+                email: dataUser.email,
                 password: dataUser.password,
                 role_name: dataUser.role_id.name,
                 avatar: dataUser.avatar,
