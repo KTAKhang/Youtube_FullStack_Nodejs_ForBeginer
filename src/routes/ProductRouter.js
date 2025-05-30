@@ -151,7 +151,7 @@ routerProduct.put(
  *       400:
  *         description: Tham số không hợp lệ
  */
-routerProduct.get("/", authUserMiddleware, productController.getAllProducts);
+routerProduct.get("/", productController.getAllProducts);
 
 /**
  * @swagger
