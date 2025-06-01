@@ -15,9 +15,8 @@ const { authUserMiddleware } = require("../middleware/authMiddleware");
  * /cart/add:
  *   post:
  *     summary: Thêm sản phẩm vào giỏ hàng
- *     tags: [Cart]
- *     security:
- *       - bearerAuth: []
+ *      tags:
+ *       - Cart
  *     requestBody:
  *       required: true
  *       content:
@@ -45,9 +44,8 @@ routerCart.post("/add", authUserMiddleware, cartController.addItemToCart);
  * /cart/update:
  *   put:
  *     summary: Cập nhật số lượng sản phẩm trong giỏ hàng
- *     tags: [Cart]
- *     security:
- *       - bearerAuth: []
+ *     tags:
+ *       - Cart
  *     requestBody:
  *       required: true
  *       content:
@@ -75,9 +73,8 @@ routerCart.put("/update", authUserMiddleware, cartController.updateItemInCart);
  * /cart/remove/{product_id}:
  *   delete:
  *     summary: Xóa một sản phẩm khỏi giỏ hàng
- *     tags: [Cart]
- *     security:
- *       - bearerAuth: []
+ *     tags:
+ *       - Cart
  *     parameters:
  *       - in: path
  *         name: product_id
