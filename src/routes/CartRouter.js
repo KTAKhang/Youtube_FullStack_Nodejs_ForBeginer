@@ -97,9 +97,9 @@ routerCart.delete("/remove/:product_id", authUserMiddleware, cartController.remo
  * /cart:
  *   get:
  *     summary: Lấy toàn bộ sản phẩm trong giỏ hàng của người dùng
- *     tags: [Cart]
- *     security:
- *       - bearerAuth: []
+ *     description: người dùng xem giỏ hàng của mình.
+ *     tags:
+ *       - Cart
  *     responses:
  *       200:
  *         description: Lấy giỏ hàng thành công
