@@ -120,4 +120,32 @@ routerOrder.get("/", authUserMiddleware, orderController.getAllOrders);
  */
 routerOrder.put("/cancel/:id", authUserMiddleware, orderController.cancelOrder);
 
+/**
+ * @swagger
+ * /order/{id}:
+ *   get:
+ *     summary: Lấy chi tiết đơn hàng theo ID
+ *     description: Trả về chi tiết đơn hàng, bao gồm các sản phẩm và trạng thái.
+ *     tags:
+ *       - Orders
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID đơn hàng cần xem
+ *         schema:
+ *           type: string
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lấy chi tiết đơn hàng thành công
+ *       400:
+ *         description: Thiếu ID đơn hàng
+ *       500:
+ *         description: Lỗi máy chủ
+ */
+routerOrder.get("/:id", authUserMiddleware, orderController.getOrderDetailById);
+
+
 module.exports = routerOrder;

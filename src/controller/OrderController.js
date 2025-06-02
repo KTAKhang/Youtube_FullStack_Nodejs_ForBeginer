@@ -94,10 +94,37 @@ const cancelOrder = async (req, res) => {
     }
 };
 
+const getOrderDetailById = async (req, res) => {
+    try {
+        const order_id = req.params.id;
+        const role = req.user.role;
+
+        if (!order_id) {
+            return res.status(400).json({
+                success: false,
+                message: "Thiếu ID đơn hàng"
+            });
+        }
+
+        const result = await OrderService.getOrderDetailByOrderId(order_id, role);
+        return res.status(200).json({
+            success: true,
+            message: "Lấy chi tiết đơn hàng thành công",
+            data: result
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message || "Lỗi khi lấy chi tiết đơn hàng"
+        });
+    }
+};
+
 
 module.exports = {
     createOrder,
     updateOrder,
     getAllOrders,
-    cancelOrder
+    cancelOrder,
+    getOrderDetailById
 };

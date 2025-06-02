@@ -251,10 +251,57 @@ async function cancelOrderByCustomer(order_id, user_id) {
     }
 }
 
+async function getOrderDetailByOrderId(order_id, role = "customer") {
+    const order = await OrderModel.findById(order_id)
+        .populate("order_status_id", "name description");
+
+    if (!order) {
+        throw new Error("Không tìm thấy đơn hàng");
+    }
+
+    const orderDetails = await OrderDetailModel.find({ order_id })
+        .populate("product_id", "name image price");
+
+    const formattedItems = orderDetails.map(item => ({
+        product_id: item.product_id._id,
+        name: item.product_id.name,
+        image: item.product_id.image,
+        price: item.price,
+        quantity: item.quantity,
+        subtotal: item.price * item.quantity
+    }));
+
+    const userInfo = role === 'admin'
+        ? await UserModel.findById(order.user_id).select("full_name email")
+        : null;
+
+    return {
+        order_id: order._id,
+        total_price: order.total_price,
+        createdAt: order.createdAt,
+        receiver_name: order.receiver_name,
+        receiver_phone: order.receiver_phone,
+        receiver_address: order.receiver_address,
+        user: userInfo ? {
+            _id: userInfo._id,
+            name: userInfo.full_name,
+            email: userInfo.email
+        } : undefined,
+        order_status: {
+            _id: order.order_status_id._id,
+            name: order.order_status_id.name,
+            description: order.order_status_id.description
+        },
+        items: formattedItems
+    };
+}
+
+
 module.exports = {
     createOrderFromSelectedCartItems,
     getAllOrders,
     updateOrder,
-    cancelOrderByCustomer
+    cancelOrderByCustomer,
+    getOrderDetailByOrderId
 
 };
