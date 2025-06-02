@@ -4,6 +4,7 @@ const OrderStatusModel = require("../models/OrderStatusModel");
 const CartModel = require("../models/CartsModel");
 const CartDetailModel = require("../models/CartDetailsModel");
 const ProductModel = require("../models/ProductsModel");
+const UserModel = require("../models/UserModel");
 
 async function createOrderFromSelectedCartItems(user_id, selected_product_ids, receiverInfo) {
     const session = await OrderModel.startSession();
@@ -251,12 +252,17 @@ async function cancelOrderByCustomer(order_id, user_id) {
     }
 }
 
-async function getOrderDetailByOrderId(order_id, role = "customer") {
+async function getOrderDetailByOrderId(order_id, user_id, role = "customer") {
     const order = await OrderModel.findById(order_id)
         .populate("order_status_id", "name description");
 
     if (!order) {
         throw new Error("Không tìm thấy đơn hàng");
+    }
+
+    // Nếu không phải admin, chỉ được xem đơn hàng của chính mình
+    if (role !== 'admin' && order.user_id.toString() !== user_id.toString()) {
+        throw new Error("Bạn không có quyền xem chi tiết đơn hàng này");
     }
 
     const orderDetails = await OrderDetailModel.find({ order_id })
@@ -295,6 +301,7 @@ async function getOrderDetailByOrderId(order_id, role = "customer") {
         items: formattedItems
     };
 }
+
 
 
 module.exports = {
