@@ -26,7 +26,7 @@ const createUser = async (newUser) => {
             user_name,
             email,
             password: hashedPassword,
-            avatar: "https://res.cloudinary.com/dievplv1n/image/upload/v1739629508/defaultAvatar.jpg",
+            avatar: "https://res.cloudinary.com/dkbsae4kc/image/upload/v1748833551/avatars/wshzvhgdgn6jspttmz1o.png",
             role_id: roleData?._id,
         });
 

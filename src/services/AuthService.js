@@ -82,6 +82,7 @@ const confirmRegisterOTP = async (otp) => {
         email,
         password: hashedPassword,
         role_id: customerRole._id,
+        avatar: "https://res.cloudinary.com/dkbsae4kc/image/upload/v1748833551/avatars/wshzvhgdgn6jspttmz1o.png",
     });
 
     await newUser.save();
