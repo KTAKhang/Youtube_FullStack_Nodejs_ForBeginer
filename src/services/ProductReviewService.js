@@ -150,6 +150,31 @@ async function getAllReviewsForAdmin() {
         createdAt: review.createdAt
     }));
 }
+async function getProductReviewByOrderDetailId(order_detail_id) {
+    const review = await ProductReviewModel.findOne({ order_detail_id })
+        .populate("user_id", "full_name")
+        .populate("product_id", "name");
+
+    if (!review) {
+        throw new Error("Không tìm thấy đánh giá cho chi tiết đơn hàng này");
+    }
+
+    return {
+        _id: review._id,
+        product: {
+            _id: review.product_id._id,
+            name: review.product_id.name
+        },
+        user: {
+            _id: review.user_id._id,
+            name: review.user_id.full_name
+        },
+        rating: review.rating,
+        content: review.review_content,
+        status: review.status,
+        createdAt: review.createdAt
+    };
+}
 
 
 module.exports = {
@@ -157,5 +182,6 @@ module.exports = {
     getAllReviews,
     updateReview,
     getAllReviewsForAdmin,
-    getAllReviewsByUserId
+    getAllReviewsByUserId,
+    getProductReviewByOrderDetailId
 };

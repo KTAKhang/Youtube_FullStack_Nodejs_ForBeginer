@@ -125,10 +125,37 @@ const getAllReviewsForAdmin = async (req, res) => {
     }
 };
 
+const getProductReviewByOrderDetailId = async (req, res) => {
+    try {
+        const { order_detail_id } = req.params;
+
+        if (!order_detail_id) {
+            return res.status(400).json({
+                success: false,
+                message: "Thiếu ID chi tiết đơn hàng"
+            });
+        }
+
+        const review = await ProductReviewService.getProductReviewByOrderDetailId(order_detail_id);
+        return res.status(200).json({
+            success: true,
+            message: "Lấy đánh giá thành công",
+            data: review
+        });
+    } catch (error) {
+        return res.status(404).json({
+            success: false,
+            message: error.message || "Không tìm thấy đánh giá"
+        });
+    }
+};
+
+
 module.exports = {
     createReview,
     updateReview,
     getProductReviews,
     getAllReviewsForAdmin,
-    getProductReviewsByUserId
+    getProductReviewsByUserId,
+    getProductReviewByOrderDetailId
 };

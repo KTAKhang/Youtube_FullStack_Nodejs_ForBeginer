@@ -140,4 +140,32 @@ routerReview.get("/product/:product_id", productReviewController.getProductRevie
  */
 routerReview.get("/all", authAdminMiddleware, productReviewController.getAllReviewsForAdmin);
 
+/**
+ * @swagger
+ * /product-review/order-detail/{order_detail_id}:
+ *   get:
+ *     summary: Lấy đánh giá theo ID chi tiết đơn hàng
+ *     tags: [ProductReviews]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: order_detail_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID chi tiết đơn hàng
+ *     responses:
+ *       200:
+ *         description: Lấy đánh giá thành công
+ *       404:
+ *         description: Không tìm thấy đánh giá
+ */
+routerReview.get(
+    "/order-detail/:order_detail_id",
+    authUserMiddleware,
+    productReviewController.getProductReviewByOrderDetailId
+);
+
+
 module.exports = routerReview;

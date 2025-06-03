@@ -11,7 +11,7 @@ async function createOrderFromSelectedCartItems(user_id, selected_product_ids, r
     session.startTransaction();
 
     try {
-        // B1: Lấy giỏ hàng và các sản phẩm được chọn
+
         const cart = await CartModel.findOne({ user_id }).session(session);
         if (!cart) throw new Error("Không tìm thấy giỏ hàng");
 
@@ -26,7 +26,6 @@ async function createOrderFromSelectedCartItems(user_id, selected_product_ids, r
 
         if (cartItems.length === 0) throw new Error("Không tìm thấy sản phẩm phù hợp trong giỏ hàng");
 
-        // B2: Kiểm tra số lượng và trạng thái từng sản phẩm
         for (const item of cartItems) {
             const product = await ProductModel.findById(item.product_id).session(session);
             if (!product || !product.status || product.quantity < item.quantity) {
@@ -34,11 +33,11 @@ async function createOrderFromSelectedCartItems(user_id, selected_product_ids, r
             }
         }
 
-        // B3: Tính tổng tiền đơn hàng
+
         const totalPrice = cartItems.reduce((sum, item) => sum + item.quantity * item.price, 0);
 
         const statusId = await getDefaultStatusId();
-        // B4: Tạo đơn hàng
+
         const order = await OrderModel.create([{
             user_id,
             total_price: totalPrice,
@@ -50,7 +49,7 @@ async function createOrderFromSelectedCartItems(user_id, selected_product_ids, r
 
         const orderId = order[0]._id;
 
-        // B5: Tạo chi tiết đơn hàng
+
         const orderDetails = cartItems.map(item => ({
             order_id: orderId,
             product_id: item.product_id,
@@ -60,20 +59,18 @@ async function createOrderFromSelectedCartItems(user_id, selected_product_ids, r
 
         await OrderDetailModel.insertMany(orderDetails, { session });
 
-        // B6: Trừ kho
         for (const item of cartItems) {
             await ProductModel.findByIdAndUpdate(item.product_id, {
                 $inc: { quantity: -item.quantity }
             }).session(session);
         }
 
-        // B7: Xoá những sản phẩm đã chọn khỏi giỏ hàng
         await CartDetailModel.deleteMany({
             cart_id: cart._id,
             product_id: { $in: selected_product_ids }
         }).session(session);
 
-        // B8: Tính lại tổng tiền giỏ hàng còn lại
+
         const remainingItems = await CartDetailModel.find({ cart_id: cart._id }).session(session);
         const newSum = remainingItems.reduce((total, item) => total + item.quantity * item.price, 0);
         cart.sum = newSum;
@@ -135,7 +132,6 @@ async function updateOrder(order_id, updateData) {
     };
 }
 
-// Hàm dùng để lấy _id của trạng thái "PENDING"
 async function getDefaultStatusId() {
     const status = await OrderStatusModel.findOne({ name: "PENDING" });
     if (!status) throw new Error("Không tìm thấy trạng thái PENDING");
@@ -204,30 +200,27 @@ async function cancelOrderByCustomer(order_id, user_id) {
     session.startTransaction();
 
     try {
-        // B1: Tìm đơn hàng
+
         const order = await OrderModel.findById(order_id).session(session);
         if (!order) throw new Error("Không tìm thấy đơn hàng");
 
-        // B2: Kiểm tra đơn hàng có thuộc về user đang đăng nhập không
         if (order.user_id.toString() !== user_id.toString()) {
             throw new Error("Bạn không có quyền hủy đơn hàng này");
         }
 
-        // B3: Kiểm tra trạng thái có phải PENDING không
+
         const currentStatus = await OrderStatusModel.findById(order.order_status_id).session(session);
         if (!currentStatus || currentStatus.name !== "PENDING") {
             throw new Error("Chỉ có thể hủy đơn hàng khi trạng thái là PENDING");
         }
 
-        // B4: Lấy trạng thái CANCELED
         const canceledStatus = await OrderStatusModel.findOne({ name: "CANCELLED" }).session(session);
         if (!canceledStatus) throw new Error("Không tìm thấy trạng thái CANCELLED");
 
-        // B5: Cập nhật trạng thái đơn hàng
+
         order.order_status_id = canceledStatus._id;
         await order.save({ session });
 
-        // B6: Lấy chi tiết đơn hàng để hoàn kho
         const orderDetails = await OrderDetailModel.find({ order_id }).session(session);
 
         for (const item of orderDetails) {
