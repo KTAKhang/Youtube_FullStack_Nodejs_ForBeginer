@@ -162,6 +162,7 @@ async function getAllOrders(role, user_id) {
             .populate("product_id", "name image price");
 
         const formattedItems = orderDetails.map(item => ({
+            order_details_id: item._id,
             product_id: item.product_id._id,
             name: item.product_id.name,
             image: item.product_id.image,
@@ -269,6 +270,7 @@ async function getOrderDetailByOrderId(order_id, user_id, role = "customer") {
         .populate("product_id", "name image price");
 
     const formattedItems = orderDetails.map(item => ({
+        order_details_id: item._id,
         product_id: item.product_id._id,
         name: item.product_id.name,
         image: item.product_id.image,
