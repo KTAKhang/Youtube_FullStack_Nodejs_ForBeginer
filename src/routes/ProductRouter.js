@@ -174,6 +174,6 @@ routerProduct.get("/", productController.getAllProducts);
  *       404:
  *         description: Không tìm thấy sản phẩm
  */
-routerProduct.get("/:id", authUserMiddleware, productController.getProductById);
+routerProduct.get("/:id", productController.getProductById);
 
 module.exports = routerProduct;

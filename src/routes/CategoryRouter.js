@@ -148,7 +148,7 @@ routerCategory.put(
  *       500:
  *         description: Lỗi server
  */
-routerCategory.get("/", authUserMiddleware, categoryController.getAllCategories);
+routerCategory.get("/", categoryController.getAllCategories);
 
 
 /**
@@ -174,7 +174,7 @@ routerCategory.get("/", authUserMiddleware, categoryController.getAllCategories)
  *       500:
  *         description: Lỗi server
  */
-routerCategory.get("/:id", authUserMiddleware, categoryController.getCategoryById);
+routerCategory.get("/:id", categoryController.getCategoryById);
 
 
 module.exports = routerCategory;
