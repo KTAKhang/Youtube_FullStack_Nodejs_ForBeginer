@@ -5,6 +5,7 @@ const CartModel = require("../models/CartsModel");
 const CartDetailModel = require("../models/CartDetailsModel");
 const ProductModel = require("../models/ProductsModel");
 const UserModel = require("../models/UserModel");
+const ProductReviewsModel = require("../models/ProductReviewsModel");
 
 async function createOrderFromSelectedCartItems(user_id, selected_product_ids, receiverInfo) {
     const session = await OrderModel.startSession();
@@ -262,6 +263,18 @@ async function getOrderDetailByOrderId(order_id, user_id, role = "customer") {
     const orderDetails = await OrderDetailModel.find({ order_id })
         .populate("product_id", "name image price");
 
+    // Lấy tất cả review liên quan đến order_details
+    const orderDetailIds = orderDetails.map(item => item._id);
+    const productReviews = await ProductReviewsModel.find({
+        order_detail_id: { $in: orderDetailIds }
+    });
+
+    // Tạo Map để tra nhanh theo order_detail_id
+    const reviewMap = new Map();
+    productReviews.forEach(review => {
+        reviewMap.set(review.order_detail_id.toString(), review.status === true);
+    });
+
     const formattedItems = orderDetails.map(item => ({
         order_details_id: item._id,
         product_id: item.product_id._id,
@@ -269,9 +282,9 @@ async function getOrderDetailByOrderId(order_id, user_id, role = "customer") {
         image: item.product_id.image,
         price: item.price,
         quantity: item.quantity,
-        subtotal: item.price * item.quantity
+        subtotal: item.price * item.quantity,
+        review_status: reviewMap.get(item._id.toString()) || null
     }));
-
     const userInfo = role === 'admin'
         ? await UserModel.findById(order.user_id).select("full_name email")
         : null;
