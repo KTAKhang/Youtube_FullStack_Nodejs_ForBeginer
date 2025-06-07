@@ -165,22 +165,30 @@ async function getAllOrders(role, user_id) {
             order_detail_id: { $in: orderDetailIds }
         });
 
-        // Tạo Map để tra cứu review_status nhanh chóng
+        // Tạo Map để tra cứu review_status và review_id nhanh chóng
         const reviewMap = new Map();
         productReviews.forEach(review => {
-            reviewMap.set(review.order_detail_id.toString(), review.status === true);
+            reviewMap.set(review.order_detail_id.toString(), {
+                status: review.status === true,
+                id: review._id
+            });
         });
 
-        const formattedItems = orderDetails.map(item => ({
-            order_details_id: item._id,
-            product_id: item.product_id._id,
-            name: item.product_id.name,
-            image: item.product_id.image,
-            price: item.price,
-            quantity: item.quantity,
-            subtotal: item.price * item.quantity,
-            review_status: reviewMap.get(item._id.toString()) || null
-        }));
+        const formattedItems = orderDetails.map(item => {
+            const reviewData = reviewMap.get(item._id.toString());
+            return {
+                order_details_id: item._id,
+                product_id: item.product_id._id,
+                name: item.product_id.name,
+                image: item.product_id.image,
+                price: item.price,
+                quantity: item.quantity,
+                subtotal: item.price * item.quantity,
+                review_status: reviewData ? reviewData.status : null,
+                product_reviews_id: reviewData ? reviewData.id : null
+            };
+        });
+
         const userInfo = role === 'admin'
             ? await UserModel.findById(order.user_id).select("full_name email")
             : null;
