@@ -52,7 +52,7 @@ const addItemToCart = async (user_id, product_id, quantity) => {
         return total + item.quantity * item.price;
     }, 0);
 
-    cart.sum = newSum;
+    cart.sum = allItems.length;
     await cart.save();
 
     return {
