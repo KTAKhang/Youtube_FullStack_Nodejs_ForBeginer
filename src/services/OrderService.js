@@ -45,6 +45,7 @@ async function createOrderFromSelectedCartItems(user_id, selected_product_ids, r
             receiver_name: receiverInfo.receiver_name,
             receiver_address: receiverInfo.receiver_address,
             receiver_phone: receiverInfo.receiver_phone,
+            note: receiverInfo.note,
             order_status_id: statusId
         }], { session });
 
