@@ -6,6 +6,7 @@ const CartDetailModel = require("../models/CartDetailsModel");
 const ProductModel = require("../models/ProductsModel");
 const UserModel = require("../models/UserModel");
 const ProductReviewsModel = require("../models/ProductReviewsModel");
+const { default: mongoose } = require("mongoose");
 
 async function createOrderFromSelectedCartItems(user_id, selected_product_ids, receiverInfo) {
     const session = await OrderModel.startSession();
@@ -140,18 +141,23 @@ async function getDefaultStatusId() {
     return status._id;
 }
 
-async function getAllOrders(role, user_id) {
-    let orders;
+async function getAllOrders(role, user_id, page, limit) {
+    const skip = (page - 1) * limit;
+    let ordersQuery;
 
     if (role === 'admin') {
-        orders = await OrderModel.find()
-            .populate("order_status_id", "name description")
-            .sort({ createdAt: -1 });
+        ordersQuery = OrderModel.find()
+            .populate("order_status_id", "name description");
     } else {
-        orders = await OrderModel.find({ user_id })
-            .populate("order_status_id", "name description")
-            .sort({ createdAt: -1 });
+        ordersQuery = OrderModel.find({ user_id })
+            .populate("order_status_id", "name description");
     }
+
+    const totalOrders = await ordersQuery.clone().countDocuments(); // tổng số đơn hàng
+    const orders = await ordersQuery
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
 
     const results = [];
 
@@ -159,14 +165,11 @@ async function getAllOrders(role, user_id) {
         const orderDetails = await OrderDetailModel.find({ order_id: order._id })
             .populate("product_id", "name image price");
 
-        // Lấy danh sách order_detail_ids để truy vấn review
         const orderDetailIds = orderDetails.map(item => item._id);
-
         const productReviews = await ProductReviewsModel.find({
             order_detail_id: { $in: orderDetailIds }
         });
 
-        // Tạo Map để tra cứu review_status và review_id nhanh chóng
         const reviewMap = new Map();
         productReviews.forEach(review => {
             reviewMap.set(review.order_detail_id.toString(), {
@@ -215,8 +218,107 @@ async function getAllOrders(role, user_id) {
         });
     }
 
-    return results;
+    return {
+        total: totalOrders,
+        page,
+        limit,
+        totalPages: Math.ceil(totalOrders / limit),
+        orders: results
+    };
 }
+
+
+async function getAllOrdersByStatus(role, user_id, statusFilter, page = 1, limit = 5) {
+    let query = {};
+
+    if (role !== 'admin') {
+        query.user_id = new mongoose.Types.ObjectId(user_id);
+    }
+
+    let orders = await OrderModel.find(query)
+        .populate("order_status_id", "name description")
+        .sort({ createdAt: -1 });
+
+    // Lọc status theo name viết HOA (giống như DB)
+    if (statusFilter) {
+        orders = orders.filter(order =>
+            order.order_status_id?.name === statusFilter // statusFilter = "PENDING"
+        );
+    }
+
+    const total = orders.length;
+
+    const start = (page - 1) * limit;
+    const end = start + limit;
+    const paginatedOrders = orders.slice(start, end);
+
+    const results = [];
+
+    for (const order of paginatedOrders) {
+        const orderDetails = await OrderDetailModel.find({ order_id: order._id })
+            .populate("product_id", "name image price");
+
+        const orderDetailIds = orderDetails.map(item => item._id);
+        const productReviews = await ProductReviewsModel.find({
+            order_detail_id: { $in: orderDetailIds }
+        });
+
+        const reviewMap = new Map();
+        productReviews.forEach(review => {
+            reviewMap.set(review.order_detail_id.toString(), {
+                status: review.status === true,
+                id: review._id
+            });
+        });
+
+        const formattedItems = orderDetails.map(item => {
+            const reviewData = reviewMap.get(item._id.toString());
+            return {
+                order_details_id: item._id,
+                product_id: item.product_id._id,
+                name: item.product_id.name,
+                image: item.product_id.image,
+                price: item.price,
+                quantity: item.quantity,
+                subtotal: item.price * item.quantity,
+                review_status: reviewData ? reviewData.status : null,
+                product_reviews_id: reviewData ? reviewData.id : null
+            };
+        });
+
+        const userInfo = role === 'admin'
+            ? await UserModel.findById(order.user_id).select("full_name email")
+            : null;
+
+        results.push({
+            order_id: order._id,
+            total_price: order.total_price,
+            createdAt: order.createdAt,
+            receiver_name: order.receiver_name,
+            receiver_phone: order.receiver_phone,
+            receiver_address: order.receiver_address,
+            user: userInfo ? {
+                _id: userInfo._id,
+                name: userInfo.full_name,
+                email: userInfo.email
+            } : undefined,
+            order_status: {
+                _id: order.order_status_id._id,
+                name: order.order_status_id.name,
+                description: order.order_status_id.description
+            },
+            items: formattedItems
+        });
+    }
+
+    return {
+        total,
+        page,
+        limit,
+        orders: results
+    };
+}
+
 
 async function cancelOrderByCustomer(order_id, user_id) {
     const session = await OrderModel.startSession();
@@ -339,6 +441,6 @@ module.exports = {
     getAllOrders,
     updateOrder,
     cancelOrderByCustomer,
-    getOrderDetailByOrderId
-
+    getOrderDetailByOrderId,
+    getAllOrdersByStatus
 };

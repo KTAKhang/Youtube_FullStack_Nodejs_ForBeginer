@@ -53,8 +53,30 @@ const getAllOrders = async (req, res) => {
     try {
         const role = req.user.role;
         const user_id = req.user._id;
+        const { page = 1, limit = 5 } = req.query;
+        const result = await OrderService.getAllOrders(role, user_id, page, limit);
+        return res.status(200).json({
+            success: true,
+            message: "Lấy danh sách đơn hàng thành công",
+            data: result
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message || "Lỗi máy chủ khi lấy đơn hàng"
+        });
+    }
+};
 
-        const result = await OrderService.getAllOrders(role, user_id);
+const getAllOrdersByStatus = async (req, res) => {
+    try {
+        const role = req.user.role;
+        const user_id = req.user._id;
+
+        const { status, page = 1, limit = 5 } = req.query;
+
+        const result = await OrderService.getAllOrdersByStatus(role, user_id, status, parseInt(page), parseInt(limit));
+
         return res.status(200).json({
             success: true,
             message: "Lấy danh sách đơn hàng thành công",
@@ -125,5 +147,6 @@ module.exports = {
     updateOrder,
     getAllOrders,
     cancelOrder,
-    getOrderDetailById
+    getOrderDetailById,
+    getAllOrdersByStatus
 };

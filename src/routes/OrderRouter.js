@@ -88,14 +88,156 @@ routerOrder.put("/update/:id", authAdminMiddleware, orderController.updateOrder)
  * /order:
  *   get:
  *     summary: Lấy tất cả đơn hàng (tùy vai trò)
- *     description: Admin/nhân viên có thể xem tất cả, người dùng chỉ xem đơn của mình.
+ *     description: 
+ *       - Admin và nhân viên có thể xem tất cả đơn hàng.  
+ *       - Người dùng thường chỉ xem đơn hàng của chính mình.  
+ *       - Hỗ trợ phân trang với query parameters `page` và `limit`.
  *     tags:
  *       - Orders
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Trang hiện tại
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 5
+ *         description: Số lượng đơn hàng mỗi trang
  *     responses:
  *       200:
  *         description: Lấy danh sách đơn hàng thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Lấy danh sách đơn hàng thành công
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                     page:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *                     totalPages:
+ *                       type: integer
+ *                     orders:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           order_id:
+ *                             type: string
+ *                           total_price:
+ *                             type: number
+ *                           createdAt:
+ *                             type: string
+ *                           receiver_name:
+ *                             type: string
+ *                           receiver_phone:
+ *                             type: string
+ *                           receiver_address:
+ *                             type: string
+ *                           user:
+ *                             type: object
+ *                             nullable: true
+ *                             properties:
+ *                               _id:
+ *                                 type: string
+ *                               name:
+ *                                 type: string
+ *                               email:
+ *                                 type: string
+ *                           order_status:
+ *                             type: object
+ *                             properties:
+ *                               _id:
+ *                                 type: string
+ *                               name:
+ *                                 type: string
+ *                               description:
+ *                                 type: string
+ *                           items:
+ *                             type: array
+ *                             items:
+ *                               type: object
+ *                               properties:
+ *                                 order_details_id:
+ *                                   type: string
+ *                                 product_id:
+ *                                   type: string
+ *                                 name:
+ *                                   type: string
+ *                                 image:
+ *                                   type: string
+ *                                 price:
+ *                                   type: number
+ *                                 quantity:
+ *                                   type: integer
+ *                                 subtotal:
+ *                                   type: number
+ *                                 review_status:
+ *                                   type: boolean
+ *                                   nullable: true
+ *                                 product_reviews_id:
+ *                                   type: string
+ *                                   nullable: true
+ *       401:
+ *         description: Không có token hoặc token không hợp lệ
+ *       500:
+ *         description: Lỗi máy chủ khi lấy đơn hàng
  */
 routerOrder.get("/", authUserMiddleware, orderController.getAllOrders);
+
+/**
+ * @swagger
+ * /order/status:
+ *   get:
+ *     summary: Lấy tất cả đơn hàng (theo vai trò, có lọc và phân trang)
+ *     description: Admin/nhân viên có thể xem tất cả, người dùng chỉ xem đơn của mình. Có thể lọc theo trạng thái và phân trang.
+ *     tags:
+ *       - Orders
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED, RETURNED]
+ *         description: Lọc theo trạng thái đơn hàng
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Trang hiện tại
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 5
+ *         description: Số lượng đơn hàng mỗi trang
+ *     responses:
+ *       200:
+ *         description: Lấy danh sách đơn hàng thành công
+ *       401:
+ *         description: Chưa đăng nhập
+ */
+routerOrder.get("/status", authUserMiddleware, orderController.getAllOrdersByStatus);
 
 /**
  * @swagger
