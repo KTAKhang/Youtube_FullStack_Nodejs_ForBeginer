@@ -106,7 +106,8 @@ async function getAllReviews(product_id) {
         createdAt: review.createdAt,
         user: {
             _id: review.user_id._id,
-            name: review.user_id.full_name
+            name: review.user_id.full_name,
+            avatar: review.user_id.avatar
         }
     }));
 }
@@ -142,7 +143,8 @@ async function getAllReviewsForAdmin() {
         user: {
             _id: review.user_id._id,
             name: review.user_id.full_name,
-            email: review.user_id.email
+            email: review.user_id.email,
+            avatar: review.user_id.avatar
         },
         rating: review.rating,
         content: review.review_content,

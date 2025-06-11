@@ -375,7 +375,7 @@ routerUser.get("/", authUserMiddleware, userController.getUserByToken);
  *     description: Admin có thể xem danh sách tất cả người dùng với phân trang.
  *     tags: [Users]
  *     security:
- *       - BearerAuth: []
+ *      - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: page
