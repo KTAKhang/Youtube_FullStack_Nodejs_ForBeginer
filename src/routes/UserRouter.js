@@ -235,7 +235,7 @@ routerUser.put(
  *     description: Allows authenticated users to change their password.
  *     tags: [Users]
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -304,7 +304,7 @@ routerUser.put(
  *     description: Lấy thông tin cá nhân của người dùng dựa trên token đăng nhập.
  *     tags: [Users]
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Trả về thông tin người dùng
@@ -486,7 +486,7 @@ routerUser.get("/get-all", authAdminMiddleware, userController.getAllUser);
  *     description: Trả về thông tin cá nhân của một người dùng cụ thể dựa trên ID. Chỉ có role là Administrator mới có thể xem thông tin người dùng.
  *     tags: [Users]
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
