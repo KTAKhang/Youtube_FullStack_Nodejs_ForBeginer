@@ -21,8 +21,13 @@ const transporter = nodemailer.createTransport({
 
 const sendRegisterOTP = async (user_name, email, password) => {
     const existingUser = await UserModel.findOne({ email });
+    const existingUserName = await UserModel.findOne({ user_name });
     if (existingUser) {
         return { status: "ERR", message: "Email already registered!" };
+    }
+
+    if (existingUserName) {
+        return { status: "ERR", message: "Username already taken!" };
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
