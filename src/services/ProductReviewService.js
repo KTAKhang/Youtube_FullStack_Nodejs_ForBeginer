@@ -96,7 +96,7 @@ async function updateReview(review_id, updateData, role, user_id) {
 
 async function getAllReviews(product_id) {
     const reviews = await ProductReviewModel.find({ product_id, status: true })
-        .populate("user_id", "full_name")
+        .populate("user_id", "user_name avatar")
         .sort({ createdAt: -1 });
 
     return reviews.map(review => ({
@@ -106,7 +106,7 @@ async function getAllReviews(product_id) {
         createdAt: review.createdAt,
         user: {
             _id: review.user_id._id,
-            name: review.user_id.full_name,
+            name: review.user_id.user_name,
             avatar: review.user_id.avatar
         }
     }));
