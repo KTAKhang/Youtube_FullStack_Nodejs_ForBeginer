@@ -140,7 +140,7 @@ async function getAllReviewsForAdmin(page = 1, limit = 10) {
 
     // Lấy dữ liệu có phân trang
     const reviews = await ProductReviewModel.find(query)
-        .populate("user_id", "full_name email avatar")
+        .populate("user_id", "user_name email avatar")
         .populate("product_id", "name")
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
@@ -155,7 +155,7 @@ async function getAllReviewsForAdmin(page = 1, limit = 10) {
         },
         user: {
             _id: review.user_id._id,
-            name: review.user_id.full_name,
+            user_name: review.user_id.user_name,
             email: review.user_id.email,
             avatar: review.user_id.avatar
         },

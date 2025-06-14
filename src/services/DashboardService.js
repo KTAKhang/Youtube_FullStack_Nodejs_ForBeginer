@@ -151,13 +151,13 @@ const getDashboardOverview = async () => {
     try {
         // Tổng người dùng
         const totalUsers = await UserModel.countDocuments({ status: true });
-
+        const specificStatusId = new mongoose.Types.ObjectId("682c6ec003ffc771169ec2d0");
         // Tổng doanh số (số đơn hàng)
         const totalOrders = await OrderModel.countDocuments({ status: true });
 
         // Tổng doanh thu
         const revenueResult = await OrderModel.aggregate([
-            { $match: { status: true } },
+            { $match: { order_status_id: specificStatusId } },
             { $group: { _id: null, totalRevenue: { $sum: "$total_price" } } }
         ]);
         const totalRevenue = revenueResult.length > 0 ? revenueResult[0].totalRevenue : 0;
