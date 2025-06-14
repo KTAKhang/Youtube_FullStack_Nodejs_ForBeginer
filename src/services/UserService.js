@@ -216,38 +216,48 @@ const getAllUser = (page, limit) => {
     return new Promise(async (resolve, reject) => {
         try {
             const listUser = await UserModel.find().populate("role_id", "name -_id");
-            let listUserData = listUser.map((user) => {
-                return {
-                    _id: user._id,
-                    user_name: user.user_name,
-                    password: user.password,
-                    role_name: user.role_id.name,
-                    department: user.department,
-                    job_rank: user.job_rank,
-                    salary: user.salary,
-                    avatar: user.avatar,
-                    status: user.status,
-                    createdAt: user.createdAt,
-                    updatedAt: user.updatedAt,
-                };
-            });
 
-            listUserData.sort(
-                (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-            );
+            let listUserData = listUser.map((user) => ({
+                _id: user._id,
+                user_name: user.user_name,
+                password: user.password,
+                role_name: user.role_id.name,
+                department: user.department,
+                job_rank: user.job_rank,
+                salary: user.salary,
+                avatar: user.avatar,
+                status: user.status,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt,
+            }));
+
+            // Sắp xếp mới nhất lên đầu
+            listUserData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+            // Tính tổng số user theo status
+            const totalUser = listUserData.length;
+            const totalActive = listUserData.filter(u => u.status === true).length;
+            const totalInactive = listUserData.filter(u => u.status === false).length;
+            const totalPage = limit ? Math.ceil(totalUser / limit) : 1;
+            const currentPage = page || 1;
+
+            // Phân trang
+            const paginatedUsers = (page && limit)
+                ? listUserData.slice((page - 1) * limit, page * limit)
+                : listUserData;
 
             const dataOutput = {
-                user: listUserData,
                 total: {
-                    currentPage: page,
-                    totalUser: listUserData.length,
-                    totalPage: Math.ceil(listUserData.length / limit),
+                    currentPage,
+                    totalUser,
+                    totalPage,
+                    totalActive,
+                    totalInactive,
                 },
+                user: paginatedUsers,
+
             };
-            if (page !== undefined || limit !== undefined) {
-                dataOutput.user = listUserData.slice((page - 1) * limit, page * limit);
-                dataOutput.total.currentPage = page;
-            }
+
             resolve({
                 status: "OK",
                 message: "Successfully get all user",
@@ -258,6 +268,7 @@ const getAllUser = (page, limit) => {
         }
     });
 };
+
 
 const getUserById = (id) => {
     return new Promise(async (resolve, reject) => {

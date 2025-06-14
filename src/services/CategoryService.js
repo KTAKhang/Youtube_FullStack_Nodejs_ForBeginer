@@ -82,26 +82,34 @@ const updateCategory = async (id, data, file) => {
     }
 };
 
-// Lấy tất cả danh mục (có phân trang nếu truyền page & limit)
 const getAllCategories = (page, limit) => {
     return new Promise(async (resolve, reject) => {
         try {
             const allCategories = await CategoriesModel.find();
 
+            // Sắp xếp theo thời gian tạo (mới nhất lên đầu)
             allCategories.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
+            // Đếm tổng số category theo status
+            const totalActive = allCategories.filter(cat => cat.status === true).length;
+            const totalInactive = allCategories.filter(cat => cat.status === false).length;
+
+            // Phân trang
             let categoryList = allCategories;
             if (page && limit) {
                 categoryList = categoryList.slice((page - 1) * limit, page * limit);
             }
 
             const dataOutput = {
-                categories: categoryList,
                 total: {
                     currentPage: page,
                     totalCategory: allCategories.length,
                     totalPage: limit ? Math.ceil(allCategories.length / limit) : 1,
+                    totalActive,
+                    totalInactive
                 },
+                categories: categoryList,
+
             };
 
             resolve({
@@ -114,6 +122,7 @@ const getAllCategories = (page, limit) => {
         }
     });
 };
+
 
 // Lấy chi tiết danh mục theo ID
 const getCategoryById = async (id) => {

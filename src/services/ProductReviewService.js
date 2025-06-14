@@ -128,13 +128,26 @@ async function getAllReviewsByUserId(user_id) {
     }));
 }
 
-async function getAllReviewsForAdmin() {
-    const reviews = await ProductReviewModel.find()
-        .populate("user_id", "full_name email")
-        .populate("product_id", "name")
-        .sort({ createdAt: -1 });
+async function getAllReviewsForAdmin(page = 1, limit = 10) {
+    const query = {}; // Lấy tất cả review
 
-    return reviews.map(review => ({
+    // Đếm tổng số review và chia theo trạng thái
+    const totalReview = await ProductReviewModel.countDocuments(query);
+    const totalApproved = await ProductReviewModel.countDocuments({ status: true });
+    const totalPending = await ProductReviewModel.countDocuments({ status: false });
+    const totalPage = limit ? Math.ceil(totalReview / limit) : 1;
+    const currentPage = page;
+
+    // Lấy dữ liệu có phân trang
+    const reviews = await ProductReviewModel.find(query)
+        .populate("user_id", "full_name email avatar")
+        .populate("product_id", "name")
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit);
+
+    // Xử lý dữ liệu trả về
+    const reviewList = reviews.map(review => ({
         _id: review._id,
         product: {
             _id: review.product_id._id,
@@ -151,7 +164,20 @@ async function getAllReviewsForAdmin() {
         status: review.status,
         createdAt: review.createdAt
     }));
+
+    return {
+        total: {
+            currentPage,
+            totalReview,
+            totalPage,
+            totalApproved,
+            totalPending
+        },
+        reviews: reviewList,
+
+    };
 }
+
 async function getProductReviewByOrderDetailId(order_detail_id) {
     const review = await ProductReviewModel.findOne({ order_detail_id })
         .populate("user_id", "full_name")

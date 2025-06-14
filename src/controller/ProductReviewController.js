@@ -102,8 +102,9 @@ const getProductReviews = async (req, res) => {
 
 const getAllReviewsForAdmin = async (req, res) => {
     try {
-
         console.log("User role:", req.user);
+
+        // Kiểm tra quyền
         if (req.user.role !== "admin") {
             return res.status(403).json({
                 success: false,
@@ -111,7 +112,12 @@ const getAllReviewsForAdmin = async (req, res) => {
             });
         }
 
-        const reviews = await ProductReviewService.getAllReviewsForAdmin();
+        // Lấy page và limit từ query, chuyển sang số nguyên và đặt giá trị mặc định
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
+        const reviews = await ProductReviewService.getAllReviewsForAdmin(page, limit);
+
         return res.status(200).json({
             success: true,
             message: "Lấy tất cả đánh giá thành công",
@@ -124,6 +130,7 @@ const getAllReviewsForAdmin = async (req, res) => {
         });
     }
 };
+
 
 const getProductReviewByOrderDetailId = async (req, res) => {
     try {

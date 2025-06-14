@@ -137,7 +137,6 @@ const updateProduct = async (id, updateData, file) => {
 const getAllProducts = (page, limit, search = "", category_id = "") => {
     return new Promise(async (resolve, reject) => {
         try {
-
             const query = {};
 
             if (search) {
@@ -147,7 +146,6 @@ const getAllProducts = (page, limit, search = "", category_id = "") => {
             if (category_id) {
                 query.category_id = category_id;
             }
-
 
             const allProducts = await ProductModel.find(query).populate("category_id", "name -_id");
 
@@ -168,11 +166,17 @@ const getAllProducts = (page, limit, search = "", category_id = "") => {
                 updatedAt: product.updatedAt,
             }));
 
+            // Sắp xếp theo ngày tạo
             listProductData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
+            // Thống kê số lượng theo status
+            const totalActive = listProductData.filter(p => p.status === true).length;
+            const totalInactive = listProductData.filter(p => p.status === false).length;
+
+            // Phân trang
             const totalProduct = listProductData.length;
-            const totalPage = Math.ceil(totalProduct / limit);
-            const currentPage = page;
+            const totalPage = limit ? Math.ceil(totalProduct / limit) : 1;
+            const currentPage = page || 1;
 
             const paginatedData =
                 page && limit
@@ -180,12 +184,15 @@ const getAllProducts = (page, limit, search = "", category_id = "") => {
                     : listProductData;
 
             const dataOutput = {
-                products: paginatedData,
                 total: {
                     currentPage,
                     totalProduct,
                     totalPage,
+                    totalActive,
+                    totalInactive,
                 },
+                products: paginatedData,
+
             };
 
             resolve({

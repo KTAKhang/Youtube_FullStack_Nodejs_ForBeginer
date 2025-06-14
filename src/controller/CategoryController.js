@@ -96,7 +96,6 @@ const getAllCategories = async (req, res) => {
 const getCategoryById = async (req, res) => {
     try {
         const id = req.params.id;
-
         if (!id) {
             return res.status(400).json({
                 status: "ERR",
