@@ -128,28 +128,105 @@ routerProduct.put(
  * @swagger
  * /product:
  *   get:
- *     summary: Lấy danh sách sản phẩm (phân trang)
- *     description: Trả về danh sách các sản phẩm với phân trang.
+ *     summary: Lấy danh sách sản phẩm (có phân trang & tìm kiếm)
+ *     description: |
+ *       Trả về danh sách sản phẩm theo trang, có thể lọc theo tên sản phẩm thông qua từ khóa tìm kiếm.
  *     tags:
  *       - Products
  *     parameters:
  *       - in: query
  *         name: page
- *         required: true
+ *         required: false
  *         schema:
  *           type: integer
+ *           default: 1
  *         description: Trang hiện tại (bắt đầu từ 1)
  *       - in: query
  *         name: limit
- *         required: true
+ *         required: false
  *         schema:
  *           type: integer
+ *           default: 10
  *         description: Số lượng sản phẩm mỗi trang
+ *       - in: query
+ *         name: search
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Từ khóa tìm kiếm theo tên sản phẩm
  *     responses:
  *       200:
  *         description: Lấy danh sách sản phẩm thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: OK
+ *                 message:
+ *                   type: string
+ *                   example: Lấy danh sách sản phẩm thành công
+ *                 total:
+ *                   type: integer
+ *                   example: 100
+ *                 page:
+ *                   type: integer
+ *                   example: 1
+ *                 limit:
+ *                   type: integer
+ *                   example: 10
+ *                 totalPages:
+ *                   type: integer
+ *                   example: 10
+ *                 products:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                       name:
+ *                         type: string
+ *                       price:
+ *                         type: number
+ *                       image:
+ *                         type: string
+ *                       description:
+ *                         type: string
+ *                       category:
+ *                         type: string
+ *                       count_in_stock:
+ *                         type: integer
+ *                       rating:
+ *                         type: number
  *       400:
- *         description: Tham số không hợp lệ
+ *         description: Tham số không hợp lệ (page hoặc limit không hợp lệ)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: ERR
+ *                 message:
+ *                   type: string
+ *                   example: Page and limit must be positive integers
+ *       500:
+ *         description: Lỗi máy chủ
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: ERR
+ *                 message:
+ *                   type: string
+ *                   example: Internal Server Error
  */
 routerProduct.get("/", productController.getAllProducts);
 

@@ -87,11 +87,11 @@ routerOrder.put("/update/:id", authAdminMiddleware, orderController.updateOrder)
  * @swagger
  * /order:
  *   get:
- *     summary: Lấy tất cả đơn hàng (tùy vai trò)
- *     description: 
- *       - Admin và nhân viên có thể xem tất cả đơn hàng.  
- *       - Người dùng thường chỉ xem đơn hàng của chính mình.  
- *       - Hỗ trợ phân trang với query parameters `page` và `limit`.
+ *     summary: Lấy tất cả đơn hàng (phân quyền theo vai trò)
+ *     description: |
+ *       - **Admin** và **nhân viên** có thể xem tất cả đơn hàng.  
+ *       - **Người dùng thường** chỉ xem đơn hàng của chính mình.  
+ *       - Hỗ trợ **phân trang** và **tìm kiếm** theo mã đơn hàng, trạng thái đơn hàng, hoặc thông tin người dùng (username/email).
  *     tags:
  *       - Orders
  *     security:
@@ -109,6 +109,11 @@ routerOrder.put("/update/:id", authAdminMiddleware, orderController.updateOrder)
  *           type: integer
  *           default: 5
  *         description: Số lượng đơn hàng mỗi trang
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Từ khóa tìm kiếm theo order_id, trạng thái, username hoặc email
  *     responses:
  *       200:
  *         description: Lấy danh sách đơn hàng thành công
@@ -145,6 +150,7 @@ routerOrder.put("/update/:id", authAdminMiddleware, orderController.updateOrder)
  *                             type: number
  *                           createdAt:
  *                             type: string
+ *                             format: date-time
  *                           receiver_name:
  *                             type: string
  *                           receiver_phone:

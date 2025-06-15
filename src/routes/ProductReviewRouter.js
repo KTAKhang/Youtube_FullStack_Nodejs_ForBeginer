@@ -129,7 +129,9 @@ routerReview.get("/product/:product_id", productReviewController.getProductRevie
  * /product-review/all:
  *   get:
  *     summary: Lấy toàn bộ đánh giá sản phẩm (chỉ admin)
- *     description: Chỉ admin mới có quyền truy cập. Hỗ trợ phân trang.
+ *     description: |
+ *       - Chỉ admin mới có quyền truy cập.
+ *       - Hỗ trợ phân trang và tìm kiếm theo nội dung đánh giá, tên người dùng hoặc email.
  *     tags: [ProductReviews]
  *     security:
  *       - bearerAuth: []
@@ -140,14 +142,20 @@ routerReview.get("/product/:product_id", productReviewController.getProductRevie
  *           type: integer
  *           default: 1
  *         required: false
- *         description: Số trang (bắt đầu từ 1)
+ *         description: Số trang hiện tại (bắt đầu từ 1)
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
  *           default: 10
  *         required: false
- *         description: Số lượng đánh giá trên mỗi trang
+ *         description: Số lượng đánh giá mỗi trang
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Từ khóa tìm kiếm theo nội dung, username hoặc email
  *     responses:
  *       200:
  *         description: Lấy danh sách đánh giá thành công
@@ -204,18 +212,45 @@ routerReview.get("/product/:product_id", productReviewController.getProductRevie
  *                       properties:
  *                         currentPage:
  *                           type: integer
+ *                           example: 1
  *                         totalReview:
  *                           type: integer
+ *                           example: 100
  *                         totalPage:
  *                           type: integer
+ *                           example: 10
  *                         totalApproved:
  *                           type: integer
+ *                           example: 80
  *                         totalPending:
  *                           type: integer
+ *                           example: 20
  *       403:
  *         description: Không có quyền truy cập (không phải admin)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Chỉ admin mới có quyền xem toàn bộ đánh giá
  *       500:
- *         description: Lỗi máy chủ
+ *         description: Lỗi máy chủ khi lấy đánh giá
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Lỗi máy chủ khi lấy đánh giá
  */
 routerReview.get("/all", authAdminMiddleware, productReviewController.getAllReviewsForAdmin);
 
