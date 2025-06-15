@@ -95,9 +95,7 @@ async function createOrderFromSelectedCartItems(user_id, selected_product_ids, r
     }
 }
 
-async function updateOrder(order_id, updateData) {
-
-
+const updateOrder = async (order_id, updateData) => {
     const { order_status_id, status } = updateData;
 
     const dataToUpdate = {};
@@ -122,10 +120,27 @@ async function updateOrder(order_id, updateData) {
         dataToUpdate,
         { new: true }
     );
-    console.log("updatedOrder", updatedOrder);
 
     if (!updatedOrder) {
         throw new Error("Không tìm thấy đơn hàng để cập nhật");
+    }
+
+    // === BƯỚC QUAN TRỌNG: Tăng số lượng sold nếu order_status_id == xác nhận thành công ===
+    const successStatusId = new mongoose.Types.ObjectId("682c6ec003ffc771169ec2d0");
+
+    if (
+        order_status_id &&
+        new mongoose.Types.ObjectId(order_status_id).equals(successStatusId)
+    ) {
+        const orderDetails = await OrderDetailModel.find({ order_id });
+
+        for (const item of orderDetails) {
+            await ProductModel.findByIdAndUpdate(
+                item.product_id,
+                { $inc: { sold: item.quantity } },
+                { new: true }
+            );
+        }
     }
 
     return {
@@ -133,7 +148,7 @@ async function updateOrder(order_id, updateData) {
         message: "Đã cập nhật đơn hàng",
         order: updatedOrder
     };
-}
+};
 
 async function getDefaultStatusId() {
     const status = await OrderStatusModel.findOne({ name: "PENDING" });

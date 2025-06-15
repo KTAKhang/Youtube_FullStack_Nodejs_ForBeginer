@@ -98,28 +98,35 @@ const getNewCustomersByDate = async (startDate, endDate) => {
     }
 };
 
-// Doanh số theo ngày (số lượng đơn hàng)
 const getSalesByDate = async (startDate, endDate) => {
     try {
-        const matchStage = {
-            status: true,
-            createdAt: {
-                $gte: new Date(startDate),
-                $lte: new Date(endDate)
-            }
-        };
-
         const salesByDate = await OrderModel.aggregate([
-            { $match: matchStage },
+            {
+                $match: {
+                    status: true,
+                    createdAt: {
+                        $gte: new Date(startDate),
+                        $lte: new Date(endDate)
+                    }
+                }
+            },
+            {
+                $lookup: {
+                    from: "order_details",
+                    localField: "_id",
+                    foreignField: "order_id",
+                    as: "orderDetails"
+                }
+            },
+            { $unwind: "$orderDetails" },
             {
                 $group: {
                     _id: {
-                        year: { $year: "$createdAt" },
-                        month: { $month: "$createdAt" },
-                        day: { $dayOfMonth: "$createdAt" }
+                        year: { $year: "$updatedAt" },
+                        month: { $month: "$updatedAt" },
+                        day: { $dayOfMonth: "$updatedAt" }
                     },
-                    totalOrders: { $sum: 1 },
-                    totalAmount: { $sum: "$total_price" }
+                    totalSoldQuantity: { $sum: "$orderDetails.quantity" }
                 }
             },
             {
@@ -132,8 +139,7 @@ const getSalesByDate = async (startDate, endDate) => {
                             day: "$_id.day"
                         }
                     },
-                    totalOrders: 1,
-                    totalAmount: 1
+                    totalSoldQuantity: 1
                 }
             },
             { $sort: { date: 1 } }
@@ -141,7 +147,7 @@ const getSalesByDate = async (startDate, endDate) => {
 
         return { status: "OK", data: salesByDate };
     } catch (error) {
-        console.error("Error fetching sales by date:", error);
+        console.error("Error fetching total sold quantity by date:", error);
         throw { status: "ERR", message: "Failed to fetch sales by date" };
     }
 };
@@ -247,7 +253,7 @@ const getTopSellingProducts = async (limit = 3) => {
     }
 };
 
-// Hàm tổng hợp để lấy tất cả dữ liệu dashboard
+
 const getCompleteDashboard = async (startDate, endDate) => {
     try {
         const [
