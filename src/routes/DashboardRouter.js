@@ -350,23 +350,23 @@ DashboardRouter.get("/complete-dashboard", authAdminMiddleware, DashboardControl
  * @swagger
  * /dashboard/revenue-by-month:
  *   get:
- *     summary: Lấy doanh thu theo tháng
- *     description: API lấy thống kê doanh thu theo từng tháng trong năm được chỉ định.
+ *     summary: Thống kê doanh thu theo tháng
+ *     description: API trả về doanh thu và số lượng đơn hàng của từng tháng trong năm được chỉ định.
  *     tags:
- *       [Dashboard]
+ *       - Dashboard
  *     parameters:
  *       - in: query
  *         name: year
  *         required: true
  *         schema:
  *           type: integer
- *           minimum: 2020
- *           maximum: 2030
+ *           minimum: 2000
+ *           maximum: 2100
  *         example: 2024
- *         description: Năm cần thống kê
+ *         description: "Năm cần thống kê (ví dụ: 2024)"
  *     responses:
  *       200:
- *         description: Lấy doanh thu theo tháng thành công
+ *         description: Lấy thống kê doanh thu theo tháng thành công
  *         content:
  *           application/json:
  *             schema:
@@ -374,28 +374,30 @@ DashboardRouter.get("/complete-dashboard", authAdminMiddleware, DashboardControl
  *               properties:
  *                 status:
  *                   type: string
- *                   example: "OK"
+ *                   example: OK
  *                 data:
  *                   type: array
  *                   items:
  *                     type: object
  *                     properties:
  *                       month:
- *                         type: number
+ *                         type: integer
+ *                         minimum: 1
+ *                         maximum: 12
  *                         example: 1
- *                         description: Tháng (1-12)
+ *                         description: Tháng trong năm (1 - 12)
  *                       totalRevenue:
  *                         type: number
  *                         example: 15000000
- *                         description: Tổng doanh thu tháng
+ *                         description: Tổng doanh thu của tháng (VNĐ)
  *                       orderCount:
- *                         type: number
+ *                         type: integer
  *                         example: 250
- *                         description: Số đơn hàng trong tháng
+ *                         description: Tổng số đơn hàng trong tháng
  *       400:
- *         description: Thiếu tham số year
+ *         description: Thiếu hoặc sai định dạng tham số year
  *       500:
- *         description: Lỗi server
+ *         description: Lỗi server nội bộ
  */
 DashboardRouter.get("/revenue-by-month", authAdminMiddleware, DashboardController.getRevenueByMonth);
 

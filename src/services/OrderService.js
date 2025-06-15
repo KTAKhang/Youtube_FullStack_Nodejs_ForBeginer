@@ -125,7 +125,6 @@ const updateOrder = async (order_id, updateData) => {
         throw new Error("Không tìm thấy đơn hàng để cập nhật");
     }
 
-    // === BƯỚC QUAN TRỌNG: Tăng số lượng sold nếu order_status_id == xác nhận thành công ===
     const successStatusId = new mongoose.Types.ObjectId("682c6ec003ffc771169ec2d0");
 
     if (

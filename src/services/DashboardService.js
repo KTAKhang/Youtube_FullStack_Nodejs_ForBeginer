@@ -286,22 +286,24 @@ const getCompleteDashboard = async (startDate, endDate) => {
     }
 };
 
-// Doanh thu theo tháng
 const getRevenueByMonth = async (year) => {
     try {
+        const specificStatusId = new mongoose.Types.ObjectId("682c6ec003ffc771169ec2d0");
+
         const startDate = new Date(year, 0, 1);
         const endDate = new Date(year, 11, 31, 23, 59, 59);
 
-        const revenueByMonth = await OrderModel.aggregate([
+        // Lấy doanh thu thực tế từ DB
+        const rawRevenue = await OrderModel.aggregate([
             {
                 $match: {
-                    status: true,
-                    createdAt: { $gte: startDate, $lte: endDate }
+                    order_status_id: specificStatusId,
+                    updatedAt: { $gte: startDate, $lte: endDate }
                 }
             },
             {
                 $group: {
-                    _id: { $month: "$createdAt" },
+                    _id: { month: { $month: "$updatedAt" } },
                     totalRevenue: { $sum: "$total_price" },
                     orderCount: { $sum: 1 }
                 }
@@ -309,7 +311,7 @@ const getRevenueByMonth = async (year) => {
             {
                 $project: {
                     _id: 0,
-                    month: "$_id",
+                    month: "$_id.month",
                     totalRevenue: 1,
                     orderCount: 1
                 }
@@ -317,7 +319,18 @@ const getRevenueByMonth = async (year) => {
             { $sort: { month: 1 } }
         ]);
 
-        return { status: "OK", data: revenueByMonth };
+        // Tạo mảng đủ 12 tháng mặc định
+        const fullYearRevenue = Array.from({ length: 12 }, (_, i) => {
+            const month = i + 1;
+            const matched = rawRevenue.find((item) => item.month === month);
+            return {
+                month,
+                totalRevenue: matched ? matched.totalRevenue : 0,
+                orderCount: matched ? matched.orderCount : 0
+            };
+        });
+
+        return { status: "OK", data: fullYearRevenue };
     } catch (error) {
         console.error("Error fetching revenue by month:", error);
         throw { status: "ERR", message: "Failed to fetch revenue by month" };

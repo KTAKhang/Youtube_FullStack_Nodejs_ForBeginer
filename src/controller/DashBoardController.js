@@ -119,22 +119,25 @@ const getRevenueByMonth = async (req, res) => {
     try {
         const { year } = req.query;
 
-        if (!year) {
+        // Kiểm tra đầu vào hợp lệ
+        const parsedYear = parseInt(year);
+        if (!year || isNaN(parsedYear)) {
             return res.status(400).json({
                 status: "ERR",
-                message: "Year is required"
+                message: "Trường year là bắt buộc và phải là số"
             });
         }
 
-        const response = await DashboardService.getRevenueByMonth(parseInt(year));
+        const response = await DashboardService.getRevenueByMonth(parsedYear);
         return res.status(200).json(response);
     } catch (error) {
         return res.status(500).json({
             status: "ERR",
-            message: error.message || "Internal Server Error",
+            message: error.message || "Lỗi server nội bộ",
         });
     }
 };
+
 
 // Top sản phẩm bán chạy theo danh mục
 const getTopProductsByCategory = async (req, res) => {
