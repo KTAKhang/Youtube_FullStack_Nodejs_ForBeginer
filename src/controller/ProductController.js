@@ -49,14 +49,14 @@ const getAllProducts = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const search = req.query.search || "";
-        const category_id = req.query.category_id || "";
+
         if (isNaN(page) || page <= 0 || isNaN(limit) || limit <= 0) {
             return res.status(400).json({
                 status: "ERR",
                 message: "Page and limit must be positive integers",
             });
         }
-        const result = await ProductService.getAllProducts(page, limit, search, category_id);
+        const result = await ProductService.getAllProducts(page, limit, search);
         return res.status(200).json(result);
     } catch (error) {
         return res.status(500).json({ status: "ERR", message: error.message });

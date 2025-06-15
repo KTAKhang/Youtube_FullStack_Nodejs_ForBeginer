@@ -3,6 +3,8 @@ const OrderDetailModel = require("../models/OrderDetailModel");
 const OrderModel = require("../models/OrderModel");
 const OrderStatusModel = require("../models/OrderStatusModel");
 const ProductModel = require("../models/ProductsModel");
+const UserModel = require("../models/UserModel");
+
 
 async function createProductReview({ user_id, product_id, order_detail_id, rating, review_content }) {
     const orderDetail = await OrderDetailModel.findById(order_detail_id);
@@ -128,17 +130,40 @@ async function getAllReviewsByUserId(user_id) {
     }));
 }
 
-async function getAllReviewsForAdmin(page = 1, limit = 10) {
-    const query = {}; // Lấy tất cả review
+async function getAllReviewsForAdmin(page = 1, limit = 10, search = "") {
+    const query = {};
 
-    // Đếm tổng số review và chia theo trạng thái
+    // Nếu có search
+    if (search) {
+        const searchRegex = new RegExp(search, "i");
+
+        // Nếu search là số, kiểm tra để tìm theo rating
+        const isNumeric = !isNaN(search);
+        const ratingFilter = isNumeric ? { rating: Number(search) } : {};
+
+        // Tìm user có user_name hoặc email giống search
+        const matchingUsers = await UserModel.find({
+            $or: [
+                { user_name: { $regex: searchRegex } },
+                { email: { $regex: searchRegex } }
+            ]
+        }).select("_id");
+
+        const matchingUserIds = matchingUsers.map(user => user._id);
+
+        // Thêm điều kiện vào query
+        query.$or = [
+            ...(isNumeric ? [{ rating: Number(search) }] : []),
+            ...(matchingUserIds.length > 0 ? [{ user_id: { $in: matchingUserIds } }] : [])
+        ];
+    }
+
     const totalReview = await ProductReviewModel.countDocuments(query);
-    const totalApproved = await ProductReviewModel.countDocuments({ status: true });
-    const totalPending = await ProductReviewModel.countDocuments({ status: false });
+    const totalApproved = await ProductReviewModel.countDocuments({ ...query, status: true });
+    const totalPending = await ProductReviewModel.countDocuments({ ...query, status: false });
     const totalPage = limit ? Math.ceil(totalReview / limit) : 1;
     const currentPage = page;
 
-    // Lấy dữ liệu có phân trang
     const reviews = await ProductReviewModel.find(query)
         .populate("user_id", "user_name email avatar")
         .populate("product_id", "name")
@@ -146,7 +171,6 @@ async function getAllReviewsForAdmin(page = 1, limit = 10) {
         .skip((page - 1) * limit)
         .limit(limit);
 
-    // Xử lý dữ liệu trả về
     const reviewList = reviews.map(review => ({
         _id: review._id,
         product: {
@@ -173,10 +197,10 @@ async function getAllReviewsForAdmin(page = 1, limit = 10) {
             totalApproved,
             totalPending
         },
-        reviews: reviewList,
-
+        reviews: reviewList
     };
 }
+
 
 async function getProductReviewByOrderDetailId(order_detail_id) {
     const review = await ProductReviewModel.findOne({ order_detail_id })

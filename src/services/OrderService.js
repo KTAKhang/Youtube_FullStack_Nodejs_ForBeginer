@@ -155,19 +155,53 @@ async function getDefaultStatusId() {
     return status._id;
 }
 
-async function getAllOrders(role, user_id, page, limit) {
+async function getAllOrders(role, user_id, page, limit, search = "") {
     const skip = (page - 1) * limit;
-    let ordersQuery;
+    let filter = {};
 
-    if (role === 'admin') {
-        ordersQuery = OrderModel.find()
-            .populate("order_status_id", "name description");
-    } else {
-        ordersQuery = OrderModel.find({ user_id })
-            .populate("order_status_id", "name description");
+    // Tìm theo role
+    if (role !== 'admin') {
+        filter.user_id = user_id;
     }
 
-    const totalOrders = await ordersQuery.clone().countDocuments(); // tổng số đơn hàng
+    if (search) {
+        if (mongoose.Types.ObjectId.isValid(search)) {
+            filter._id = search;
+        } else {
+            const searchRegex = new RegExp(search, "i");
+
+            // Tìm các order_status_id có name giống search
+            const matchingStatuses = await OrderStatusModel.find({
+                name: { $regex: searchRegex }
+            });
+
+            const statusIds = matchingStatuses.map(status => status._id);
+
+            // Tìm user có email giống search
+            let matchingUserIds = [];
+            if (role === 'admin') {
+                const matchingUsers = await UserModel.find({
+                    email: { $regex: searchRegex }
+                }).select('_id');
+                matchingUserIds = matchingUsers.map(user => user._id);
+            }
+
+            // Gộp lại trong filter
+            filter = {
+                ...filter,
+                $or: [
+                    { order_status_id: { $in: statusIds } },
+                    ...(matchingUserIds.length > 0 ? [{ user_id: { $in: matchingUserIds } }] : [])
+                ]
+            };
+        }
+    }
+
+    const ordersQuery = OrderModel.find(filter)
+        .populate("order_status_id", "name description");
+
+    const totalOrders = await ordersQuery.clone().countDocuments();
+
     const orders = await ordersQuery
         .sort({ createdAt: -1 })
         .skip(skip)
@@ -240,6 +274,8 @@ async function getAllOrders(role, user_id, page, limit) {
         orders: results
     };
 }
+
+
 
 
 async function getAllOrdersByStatus(role, user_id, statusFilter, page = 1, limit = 5) {

@@ -115,8 +115,9 @@ const getAllReviewsForAdmin = async (req, res) => {
         // Lấy page và limit từ query, chuyển sang số nguyên và đặt giá trị mặc định
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
+        const search = req.query.search || "";
 
-        const reviews = await ProductReviewService.getAllReviewsForAdmin(page, limit);
+        const reviews = await ProductReviewService.getAllReviewsForAdmin(page, limit, search);
 
         return res.status(200).json({
             success: true,

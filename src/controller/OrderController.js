@@ -53,8 +53,8 @@ const getAllOrders = async (req, res) => {
     try {
         const role = req.user.role;
         const user_id = req.user._id;
-        const { page = 1, limit = 5 } = req.query;
-        const result = await OrderService.getAllOrders(role, user_id, page, limit);
+        const { page = 1, limit = 5, search } = req.query;
+        const result = await OrderService.getAllOrders(role, user_id, page, limit, search);
         return res.status(200).json({
             success: true,
             message: "Lấy danh sách đơn hàng thành công",

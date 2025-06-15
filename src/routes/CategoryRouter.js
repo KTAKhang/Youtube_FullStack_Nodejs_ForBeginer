@@ -124,7 +124,7 @@ routerCategory.put(
  * /category:
  *   get:
  *     summary: Lấy tất cả danh mục
- *     description: Trả về danh sách các danh mục có phân trang.
+ *     description: Trả về danh sách các danh mục có phân trang và hỗ trợ tìm kiếm theo tên hoặc ID.
  *     tags:
  *       - Categories
  *     parameters:
@@ -140,6 +140,12 @@ routerCategory.put(
  *         schema:
  *           type: integer
  *         description: Số lượng danh mục trên mỗi trang
+ *       - in: query
+ *         name: search
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Tìm kiếm theo tên danh mục hoặc ID (không phân biệt hoa thường)
  *     responses:
  *       200:
  *         description: Lấy danh sách danh mục thành công
@@ -149,6 +155,7 @@ routerCategory.put(
  *         description: Lỗi server
  */
 routerCategory.get("/", categoryController.getAllCategories);
+
 
 
 /**

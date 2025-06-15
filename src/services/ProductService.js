@@ -1,7 +1,7 @@
 const ProductModel = require("../models/ProductsModel");
 const CategoryModel = require("../models/CategoriesModel");
 const cloudinary = require("../config/cloudinaryConfig");
-
+const mongoose = require('mongoose'); // Đảm bảo đã import mongoose
 const createProduct = async (newProduct, file) => {
     try {
         const {
@@ -134,18 +134,37 @@ const updateProduct = async (id, updateData, file) => {
 };
 
 
-const getAllProducts = (page, limit, search = "", category_id = "") => {
+const getAllProducts = (page, limit, search = "") => {
     return new Promise(async (resolve, reject) => {
         try {
-            const query = {};
+            let query = {};
 
             if (search) {
-                query.name = { $regex: search, $options: "i" };
+                if (mongoose.Types.ObjectId.isValid(search)) {
+                    // Trường hợp 1: search là ID sản phẩm
+                    query._id = search;
+                } else {
+                    // Trường hợp 2: Tìm theo tên sản phẩm
+                    query.name = { $regex: search, $options: 'i' };
+
+                    // Kiểm tra có sản phẩm nào khớp không
+                    const matchedProducts = await ProductModel.find(query);
+                    if (matchedProducts.length === 0) {
+                        // Trường hợp 3: Không có sản phẩm nào -> tìm theo tên category
+                        const matchingCategories = await CategoryModel.find({
+                            name: { $regex: search, $options: 'i' }
+                        });
+
+                        const categoryIds = matchingCategories.map(cat => cat._id);
+
+                        // Reset query
+                        query = {
+                            category_id: { $in: categoryIds }
+                        };
+                    }
+                }
             }
 
-            if (category_id) {
-                query.category_id = category_id;
-            }
 
             const allProducts = await ProductModel.find(query).populate("category_id", "name -_id");
 

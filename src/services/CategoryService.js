@@ -1,6 +1,6 @@
 const CategoriesModel = require("../models/CategoriesModel");
 const cloudinary = require("../config/cloudinaryConfig");
-
+const mongoose = require('mongoose'); // Đảm bảo đã import mongoose
 // Tạo mới danh mục
 const createCategory = async ({ name }, file) => {
     try {
@@ -82,15 +82,27 @@ const updateCategory = async (id, data, file) => {
     }
 };
 
-const getAllCategories = (page, limit) => {
+
+
+const getAllCategories = (page, limit, search) => {
     return new Promise(async (resolve, reject) => {
         try {
-            const allCategories = await CategoriesModel.find();
+            let query = {};
 
-            // Sắp xếp theo thời gian tạo (mới nhất lên đầu)
-            allCategories.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            if (search) {
+                // Nếu search là ObjectId hợp lệ, tìm theo ID
+                if (mongoose.Types.ObjectId.isValid(search)) {
+                    query._id = search;
+                } else {
+                    // Ngược lại, tìm theo tên (không phân biệt hoa thường)
+                    query.name = { $regex: search, $options: 'i' };
+                }
+            }
 
-            // Đếm tổng số category theo status
+            // Truy vấn và sắp xếp
+            const allCategories = await CategoriesModel.find(query).sort({ createdAt: -1 });
+
+            // Đếm số lượng theo status
             const totalActive = allCategories.filter(cat => cat.status === true).length;
             const totalInactive = allCategories.filter(cat => cat.status === false).length;
 
@@ -109,7 +121,6 @@ const getAllCategories = (page, limit) => {
                     totalInactive
                 },
                 categories: categoryList,
-
             };
 
             resolve({
@@ -122,6 +133,7 @@ const getAllCategories = (page, limit) => {
         }
     });
 };
+
 
 
 // Lấy chi tiết danh mục theo ID

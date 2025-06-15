@@ -53,7 +53,7 @@ const updateCategory = async (req, res) => {
 
 const getAllCategories = async (req, res) => {
     try {
-        let { page, limit } = req.query;
+        let { page, limit, search } = req.query;
 
         // Convert to integer
         page = parseInt(page);
@@ -67,7 +67,8 @@ const getAllCategories = async (req, res) => {
             });
         }
 
-        const response = await CategoryService.getAllCategories(page, limit);
+        const response = await CategoryService.getAllCategories(page, limit, search);
+
 
         if (response.status === "ERR") {
             return res.status(500).json(response);
