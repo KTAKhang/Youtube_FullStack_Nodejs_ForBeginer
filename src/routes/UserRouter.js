@@ -367,15 +367,16 @@ routerUser.put(
  */
 routerUser.get("/", authUserMiddleware, userController.getUserByToken);
 
+
 /**
  * @swagger
  * /user/get-all:
  *   get:
  *     summary: Lấy danh sách tất cả người dùng
- *     description: Admin có thể xem danh sách tất cả người dùng với phân trang.
+ *     description: Admin có thể xem danh sách tất cả người dùng với phân trang và tìm kiếm.
  *     tags: [Users]
  *     security:
- *      - bearerAuth: []
+ *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: page
@@ -391,6 +392,13 @@ routerUser.get("/", authUserMiddleware, userController.getUserByToken);
  *           type: integer
  *           example: 10
  *         description: Số lượng người dùng trên mỗi trang (mặc định là 10)
+ *       - in: query
+ *         name: search
+ *         required: false
+ *         schema:
+ *           type: string
+ *           example: "john"
+ *         description: Tìm kiếm theo tên người dùng hoặc email
  *     responses:
  *       200:
  *         description: Trả về danh sách người dùng kèm theo thông tin phân trang
@@ -404,7 +412,7 @@ routerUser.get("/", authUserMiddleware, userController.getUserByToken);
  *                   example: "OK"
  *                 message:
  *                   type: string
- *                   example: "Successfully retrieved all users"
+ *                   example: "Get all users successfully"
  *                 data:
  *                   type: object
  *                   properties:
@@ -418,7 +426,7 @@ routerUser.get("/", authUserMiddleware, userController.getUserByToken);
  *                             example: "67b091e09d63acbb848c396b"
  *                           user_name:
  *                             type: string
- *                             example: "clamer1"
+ *                             example: "claimer1"
  *                           role_name:
  *                             type: string
  *                             example: "Claimer"
@@ -473,9 +481,8 @@ routerUser.get("/", authUserMiddleware, userController.getUserByToken);
  *                   example: "ERR"
  *                 message:
  *                   type: string
- *                   example: "Invalid request parameters"
+ *                   example: "Page and limit must be positive integers"
  */
-
 routerUser.get("/get-all", authAdminMiddleware, userController.getAllUser);
 
 /**

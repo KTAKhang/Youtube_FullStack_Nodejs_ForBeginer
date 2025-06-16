@@ -130,7 +130,7 @@ const updateUser = async (req, res) => {
 
 const getAllUser = async (req, res) => {
     try {
-        let { page, limit } = req.query;
+        let { page, limit, search } = req.query;
 
         // Convert to integer
         page = parseInt(page);
@@ -144,7 +144,8 @@ const getAllUser = async (req, res) => {
             });
         }
 
-        const response = await UserServices.getAllUser(page, limit);
+        // Gọi service và truyền thêm search
+        const response = await UserServices.getAllUser(page, limit, search || "");
 
         if (response.status === "ERR") {
             return res.status(500).json(response);
@@ -155,10 +156,10 @@ const getAllUser = async (req, res) => {
             message: "Get all users successfully",
             data: response.data,
             pagination: {
-                total: response.total,
+                total: response.data.total.totalUser,
                 page,
                 limit,
-                totalPages: Math.ceil(response.total / limit),
+                totalPages: Math.ceil(response.data.total.totalUser / limit),
             },
         });
     } catch (error) {
@@ -169,6 +170,7 @@ const getAllUser = async (req, res) => {
         });
     }
 };
+
 
 
 const getUserById = async (req, res) => {

@@ -212,14 +212,25 @@ const updateUser = async (id, data, file, role) => {
     }
 };
 
-const getAllUser = (page, limit) => {
+const getAllUser = (page, limit, search = "") => {
     return new Promise(async (resolve, reject) => {
         try {
-            const listUser = await UserModel.find().populate("role_id", "name -_id");
+            // Tạo điều kiện tìm kiếm
+            const query = search
+                ? {
+                    $or: [
+                        { user_name: { $regex: search, $options: "i" } },
+                        { email: { $regex: search, $options: "i" } },
+                    ],
+                }
+                : {};
+
+            const listUser = await UserModel.find(query).populate("role_id", "name -_id");
 
             let listUserData = listUser.map((user) => ({
                 _id: user._id,
                 user_name: user.user_name,
+                email: user.email,
                 password: user.password,
                 role_name: user.role_id.name,
                 department: user.department,
@@ -255,7 +266,6 @@ const getAllUser = (page, limit) => {
                     totalInactive,
                 },
                 user: paginatedUsers,
-
             };
 
             resolve({
