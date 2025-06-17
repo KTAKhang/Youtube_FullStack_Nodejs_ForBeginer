@@ -249,6 +249,7 @@ async function getAllOrders(role, user_id, page, limit, search = "") {
             order_id: order._id,
             total_price: order.total_price,
             createdAt: order.createdAt,
+            updatedAt: order.updatedAt,
             receiver_name: order.receiver_name,
             receiver_phone: order.receiver_phone,
             receiver_address: order.receiver_address,

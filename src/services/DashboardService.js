@@ -7,12 +7,16 @@ const mongoose = require("mongoose");
 const getRevenueByDate = async (startDate, endDate) => {
     try {
         const specificStatusId = new mongoose.Types.ObjectId("682c6ec003ffc771169ec2d0");
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
 
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
         const matchStage = {
             order_status_id: specificStatusId,
             updatedAt: {
-                $gte: new Date(startDate),
-                $lte: new Date(endDate),
+                $gte: new Date(start),
+                $lte: new Date(end),
             },
         };
 
@@ -55,11 +59,16 @@ const getRevenueByDate = async (startDate, endDate) => {
 // Khách hàng mới theo ngày
 const getNewCustomersByDate = async (startDate, endDate) => {
     try {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
         const matchStage = {
             status: true,
             createdAt: {
-                $gte: new Date(startDate),
-                $lte: new Date(endDate)
+                $gte: new Date(start),
+                $lte: new Date(end)
             }
         };
 
@@ -100,13 +109,18 @@ const getNewCustomersByDate = async (startDate, endDate) => {
 
 const getSalesByDate = async (startDate, endDate) => {
     try {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
         const salesByDate = await OrderModel.aggregate([
             {
                 $match: {
                     status: true,
-                    createdAt: {
-                        $gte: new Date(startDate),
-                        $lte: new Date(endDate)
+                    updatedAt: {
+                        $gte: new Date(start),
+                        $lte: new Date(end)
                     }
                 }
             },
