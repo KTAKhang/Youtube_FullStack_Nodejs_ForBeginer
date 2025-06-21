@@ -225,6 +225,98 @@ const getAllProducts = (page, limit, search = "") => {
     });
 };
 
+const getAllTopSoldProducts = (page, limit, search = "") => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let query = {};
+
+            if (search) {
+                if (mongoose.Types.ObjectId.isValid(search)) {
+                    // Trường hợp 1: search là ID sản phẩm
+                    query._id = search;
+                } else {
+                    // Trường hợp 2: Tìm theo tên sản phẩm
+                    query.name = { $regex: search, $options: 'i' };
+
+                    // Kiểm tra có sản phẩm nào khớp không
+                    const matchedProducts = await ProductModel.find(query);
+                    if (matchedProducts.length === 0) {
+                        // Trường hợp 3: Không có sản phẩm nào -> tìm theo tên category
+                        const matchingCategories = await CategoryModel.find({
+                            name: { $regex: search, $options: 'i' }
+                        });
+
+                        const categoryIds = matchingCategories.map(cat => cat._id);
+
+                        // Reset query
+                        query = {
+                            category_id: { $in: categoryIds }
+                        };
+                    }
+                }
+            }
+
+            // Sắp xếp theo sold giảm dần (cao nhất trước) ngay trong query
+            const allProducts = await ProductModel.find(query)
+                .populate("category_id", "name -_id")
+                .sort({ sold: -1 }); // Sắp xếp theo sold giảm dần
+
+            const listProductData = allProducts.map(product => ({
+                _id: product._id,
+                name: product.name,
+                image: product.image,
+                price: product.price,
+                detail_desc: product.detail_desc,
+                short_desc: product.short_desc,
+                quantity: product.quantity,
+                sold: product.sold,
+                factory: product.factory,
+                target: product.target,
+                category_name: product.category_id.name,
+                status: product.status,
+                createdAt: product.createdAt,
+                updatedAt: product.updatedAt,
+            }));
+
+            // Không cần sắp xếp lại vì đã sắp xếp trong query
+            // listProductData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+            // Thống kê số lượng theo status
+            const totalActive = listProductData.filter(p => p.status === true).length;
+            const totalInactive = listProductData.filter(p => p.status === false).length;
+
+            // Phân trang
+            const totalProduct = listProductData.length;
+            const totalPage = limit ? Math.ceil(totalProduct / limit) : 1;
+            const currentPage = page || 1;
+
+            const paginatedData =
+                page && limit
+                    ? listProductData.slice((page - 1) * limit, page * limit)
+                    : listProductData;
+
+            const dataOutput = {
+                total: {
+                    currentPage,
+                    totalProduct,
+                    totalPage,
+                    totalActive,
+                    totalInactive,
+                },
+                products: paginatedData,
+            };
+
+            resolve({
+                status: "OK",
+                message: "Successfully retrieved products sorted by highest sold",
+                data: dataOutput,
+            });
+        } catch (error) {
+            reject(error);
+        }
+    });
+};
+
 
 
 const getProductById = async (id) => {
@@ -248,4 +340,5 @@ module.exports = {
     updateProduct,
     getAllProducts,
     getProductById,
+    getAllTopSoldProducts
 };
