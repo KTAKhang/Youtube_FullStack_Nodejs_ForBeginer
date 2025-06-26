@@ -37,12 +37,19 @@ const createCategory = async ({ name }, file) => {
     }
 };
 
-// Cập nhật danh mục
 const updateCategory = async (id, data, file) => {
     try {
         const category = await CategoriesModel.findById(id);
         if (!category) {
             return { status: "ERR", message: "Category does not exist" };
+        }
+
+        // Kiểm tra nếu name mới khác name cũ → cần kiểm tra trùng
+        if (data.name && data.name !== category.name) {
+            const existingCategory = await CategoriesModel.findOne({ name: data.name });
+            if (existingCategory) {
+                return { status: "ERR", message: "Category name already exists" };
+            }
         }
 
         if (file) {
@@ -81,6 +88,7 @@ const updateCategory = async (id, data, file) => {
         return { status: "ERR", message: error.message };
     }
 };
+
 
 
 
