@@ -1,19 +1,51 @@
 const mongoose = require("mongoose");
+
 const userSchema = new mongoose.Schema(
     {
-        user_name: { type: String, required: true },
-        email: { type: String, required: true },
-        password: { type: String, required: true },
-        avatar: { type: String },
+        user_name: {
+            type: String,
+            required: [true, "Tên người dùng là bắt buộc"],
+            trim: true,
+            minlength: [3, "Tên người dùng phải có ít nhất 3 ký tự"],
+            maxlength: [50, "Tên người dùng không được vượt quá 50 ký tự"],
+        },
+        email: {
+            type: String,
+            required: [true, "Email là bắt buộc"],
+            trim: true,
+            lowercase: true,
+            unique: true,
+            match: [/\S+@\S+\.\S+/, "Định dạng email không hợp lệ"],
+        },
+        password: {
+            type: String,
+            required: [true, "Mật khẩu là bắt buộc"],
+        },
+        avatar: {
+            type: String,
+            trim: true,
+        },
         role_id: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "roles",
-            required: true,
+            required: [true, "Vai trò là bắt buộc"],
         },
-        resetPasswordOTP: { type: String },
-        resetPasswordExpires: { type: Date },
-        status: { type: Boolean, default: true },
-        access_token: { type: String, required: false },
+        resetPasswordOTP: {
+            type: String,
+            default: null,
+        },
+        resetPasswordExpires: {
+            type: Date,
+            default: null,
+        },
+        status: {
+            type: Boolean,
+            default: true,
+        },
+        access_token: {
+            type: String,
+            default: null,
+        },
     },
     {
         timestamps: true,

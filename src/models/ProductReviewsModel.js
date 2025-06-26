@@ -4,21 +4,33 @@ const productReviewSchema = new mongoose.Schema({
     user_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "users",
-        required: true,
+        required: [true, "Người dùng là bắt buộc"],
     },
     product_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "products",
-        required: true,
+        required: [true, "Sản phẩm là bắt buộc"],
     },
     order_detail_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "order_details",
-        required: true,
+        required: [true, "Chi tiết đơn hàng là bắt buộc"],
     },
-    rating: { type: Number, required: true, min: 1, max: 5 },
-    review_content: String,
-    status: { type: Boolean, required: true, default: true }
+    rating: {
+        type: Number,
+        required: [true, "Đánh giá là bắt buộc"],
+        min: [1, "Đánh giá thấp nhất là 1 sao"],
+        max: [5, "Đánh giá cao nhất là 5 sao"],
+    },
+    review_content: {
+        type: String,
+        trim: true,
+    },
+    status: {
+        type: Boolean,
+        required: [true, "Trạng thái là bắt buộc"],
+        default: true,
+    },
 }, {
     timestamps: true,
 });
