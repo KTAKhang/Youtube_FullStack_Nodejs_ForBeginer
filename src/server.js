@@ -8,7 +8,6 @@ const swaggerDocs = require("./swagger");
 
 dotenv.config();
 
-// 👉 Thêm dòng này để gọi job
 require("./jobs/callApiJob");
 
 const app = express();
