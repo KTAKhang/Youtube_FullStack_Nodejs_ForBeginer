@@ -133,7 +133,7 @@ async function getAllReviewsByUserId(user_id) {
 async function getAllReviewsForAdmin(page = 1, limit = 10, search = "") {
     const query = {};
 
-    // Nếu có search
+
     if (search) {
         const searchRegex = new RegExp(search, "i");
 

@@ -5,7 +5,7 @@ const cloudinary = require("../config/cloudinaryConfig");
 const bcrypt = require("bcrypt");
 const jwtService = require("./JwtService");
 
-// Tạo tài khoản người dùng
+
 const createUser = async (newUser) => {
     const { user_name, password, email, role } = newUser;
     try {
@@ -51,7 +51,7 @@ const createUser = async (newUser) => {
     }
 };
 
-// Đăng nhập
+
 const loginUser = async ({ email, password }) => {
     try {
         const user = await UserModel.findOne({
@@ -64,11 +64,11 @@ const loginUser = async ({ email, password }) => {
         const passwordMatch = bcrypt.compareSync(password, user.password);
         if (!passwordMatch) throw { status: "ERR", message: "Incorrect password" };
 
-        // ✅ Populate để lấy role name
-        const populatedUser = await UserModel.findById(user._id).populate("role_id", "name -_id");
-        const roleName = populatedUser?.role_id?.name || "customer"; // fallback nếu role bị lỗi
 
-        // ✅ Tạo token có role & isAdmin đúng
+        const populatedUser = await UserModel.findById(user._id).populate("role_id", "name -_id");
+        const roleName = populatedUser?.role_id?.name || "customer";
+
+
         const accessToken = await jwtService.generalAccessToken({
             _id: user._id,
             isAdmin: roleName === "admin",
@@ -215,7 +215,7 @@ const updateUser = async (id, data, file, role) => {
 const getAllUser = (page, limit, search = "") => {
     return new Promise(async (resolve, reject) => {
         try {
-            // Tạo điều kiện tìm kiếm
+
             const query = search
                 ? {
                     $or: [
@@ -242,17 +242,13 @@ const getAllUser = (page, limit, search = "") => {
                 updatedAt: user.updatedAt,
             }));
 
-            // Sắp xếp mới nhất lên đầu
-            listUserData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-            // Tính tổng số user theo status
+            listUserData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             const totalUser = listUserData.length;
             const totalActive = listUserData.filter(u => u.status === true).length;
             const totalInactive = listUserData.filter(u => u.status === false).length;
             const totalPage = limit ? Math.ceil(totalUser / limit) : 1;
             const currentPage = page || 1;
-
-            // Phân trang
             const paginatedUsers = (page && limit)
                 ? listUserData.slice((page - 1) * limit, page * limit)
                 : listUserData;

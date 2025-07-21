@@ -15,28 +15,20 @@ const createProduct = async (newProduct, file) => {
             factory,
             target,
         } = newProduct;
-
-
         const requiredFields = { category_id, name, price, detail_desc, short_desc, quantity, factory, target };
         for (const [key, value] of Object.entries(requiredFields)) {
             if (!value) {
                 throw { status: "ERR", message: `Missing required field: ${key}` };
             }
         }
-
-
         const category = await CategoryModel.findById(category_id);
         if (!category) {
             throw { status: "ERR", message: "Category not found" };
         }
-
-
         const existingProduct = await ProductModel.findOne({ name });
         if (existingProduct) {
             throw { status: "ERR", message: "Product name already exists" };
         }
-
-
         let imageUrl = "";
         if (file) {
             const uploadResult = await new Promise((resolve, reject) => {
@@ -278,14 +270,8 @@ const getAllTopSoldProducts = (page, limit, search = "") => {
                 updatedAt: product.updatedAt,
             }));
 
-            // Không cần sắp xếp lại vì đã sắp xếp trong query
-            // listProductData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-            // Thống kê số lượng theo status
             const totalActive = listProductData.filter(p => p.status === true).length;
             const totalInactive = listProductData.filter(p => p.status === false).length;
-
-            // Phân trang
             const totalProduct = listProductData.length;
             const totalPage = limit ? Math.ceil(totalProduct / limit) : 1;
             const currentPage = page || 1;

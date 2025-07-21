@@ -1,7 +1,7 @@
 const CategoriesModel = require("../models/CategoriesModel");
 const cloudinary = require("../config/cloudinaryConfig");
-const mongoose = require('mongoose'); // Đảm bảo đã import mongoose
-// Tạo mới danh mục
+const mongoose = require('mongoose');
+
 const createCategory = async ({ name }, file) => {
     try {
         const existingCategory = await CategoriesModel.findOne({ name });

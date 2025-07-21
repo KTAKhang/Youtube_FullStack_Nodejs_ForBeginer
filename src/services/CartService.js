@@ -3,24 +3,24 @@ const CartDetailModel = require("../models/CartDetailsModel");
 const ProductModel = require("../models/ProductsModel");
 
 const addItemToCart = async (user_id, product_id, quantity) => {
-    // 1. Tìm sản phẩm
+
     const product = await ProductModel.findById(product_id);
     if (!product || !product.status) {
         throw new Error("Sản phẩm không tồn tại hoặc đã ngừng bán");
     }
 
-    // 👉 Kiểm tra số lượng hàng tồn kho
+
     if (product.quantity < quantity) {
         throw new Error("Số lượng sản phẩm không đủ trong kho");
     }
 
-    // 2. Tìm hoặc tạo giỏ hàng
+
     let cart = await CartModel.findOne({ user_id });
     if (!cart) {
         cart = await CartModel.create({ user_id, sum: 0 });
     }
 
-    // 3. Kiểm tra sản phẩm đã có trong giỏ chưa
+
     let cartDetail = await CartDetailModel.findOne({
         cart_id: cart._id,
         product_id
@@ -29,7 +29,7 @@ const addItemToCart = async (user_id, product_id, quantity) => {
     if (cartDetail) {
         const totalQuantity = cartDetail.quantity + quantity;
 
-        // 👉 Kiểm tra tổng số lượng sau khi cộng có vượt kho không
+
         if (totalQuantity > product.quantity) {
             throw new Error(`Chỉ còn ${product.quantity - cartDetail.quantity} sản phẩm trong kho`);
         }
@@ -37,7 +37,7 @@ const addItemToCart = async (user_id, product_id, quantity) => {
         cartDetail.quantity = totalQuantity;
         await cartDetail.save();
     } else {
-        // Nếu chưa có => thêm mới
+
         await CartDetailModel.create({
             cart_id: cart._id,
             product_id,
@@ -46,7 +46,7 @@ const addItemToCart = async (user_id, product_id, quantity) => {
         });
     }
 
-    // 4. Tính lại tổng tiền (sum)
+
     const allItems = await CartDetailModel.find({ cart_id: cart._id });
     const newSum = allItems.reduce((total, item) => {
         return total + item.quantity * item.price;
@@ -63,7 +63,6 @@ const addItemToCart = async (user_id, product_id, quantity) => {
     };
 };
 
-// ✅ Cập nhật số lượng sản phẩm trong giỏ hàng
 const updateItemInCart = async (user_id, product_id, newQuantity) => {
     const product = await ProductModel.findById(product_id);
     if (!product || !product.status) {
@@ -93,7 +92,7 @@ const updateItemInCart = async (user_id, product_id, newQuantity) => {
         await cartDetail.save();
     }
 
-    // Tính lại tổng tiền
+
     const allItems = await CartDetailModel.find({ cart_id: cart._id });
     const newSum = allItems.reduce((total, item) => total + item.quantity * item.price, 0);
 
@@ -107,7 +106,7 @@ const updateItemInCart = async (user_id, product_id, newQuantity) => {
     };
 };
 
-// ❌ Xóa sản phẩm khỏi giỏ hàng
+
 const removeItemFromCart = async (user_id, product_id) => {
     const cart = await CartModel.findOne({ user_id });
     if (!cart) throw new Error("Không tìm thấy giỏ hàng");

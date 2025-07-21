@@ -29,13 +29,14 @@ const getRevenueByDate = async (startDate, endDate) => {
                         month: { $month: "$updatedAt" },
                         day: { $dayOfMonth: "$updatedAt" },
                     },
+                    orderIds: { $push: "$_id" },
                     totalRevenue: { $sum: "$total_price" },
                     orderCount: { $sum: 1 },
                 },
             },
             {
                 $project: {
-                    _id: 0,
+                    _id: 1,
                     date: {
                         $dateFromParts: {
                             year: "$_id.year",
@@ -45,6 +46,7 @@ const getRevenueByDate = async (startDate, endDate) => {
                     },
                     totalRevenue: 1,
                     orderCount: 1,
+                    orderIds: 1
                 },
             },
             { $sort: { date: 1 } },
@@ -109,6 +111,7 @@ const getNewCustomersByDate = async (startDate, endDate) => {
 
 const getSalesByDate = async (startDate, endDate) => {
     try {
+        const specificStatusId = new mongoose.Types.ObjectId("682c6ec003ffc771169ec2d0");
         const start = new Date(startDate);
         start.setHours(0, 0, 0, 0);
 
@@ -117,7 +120,8 @@ const getSalesByDate = async (startDate, endDate) => {
         const salesByDate = await OrderModel.aggregate([
             {
                 $match: {
-                    status: true,
+                    order_status_id: specificStatusId,
+                    // status: true,
                     updatedAt: {
                         $gte: new Date(start),
                         $lte: new Date(end)
